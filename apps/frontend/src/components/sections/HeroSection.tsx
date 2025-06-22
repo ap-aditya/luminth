@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import AnimatedGraphic from '@/components/AnimatedGraphic';
+import AnimatedGraphic from '@/components/graphics/AnimatedGraphic';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 const HeroSection: FC = () => (

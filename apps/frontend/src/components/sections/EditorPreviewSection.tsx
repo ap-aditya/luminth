@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import CodeBlock from '../CodeBlock';
-import AnimatedGraphic from '../AnimatedGraphic';
+import AnimatedGraphic from '../graphics/AnimatedGraphic';
 const EditorPreviewSection: FC = () => {
     const mockCode = `from manim import *
 
