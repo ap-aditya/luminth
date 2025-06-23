@@ -1,12 +1,23 @@
 'use client';
 
-import { useState, useEffect, useContext, createContext, ReactNode } from 'react';
+import {
+  useState,
+  useEffect,
+  useContext,
+  createContext,
+  ReactNode,
+  useCallback,
+} from 'react';
 import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   sendEmailVerification,
+  sendPasswordResetEmail,
+  applyActionCode,
+  verifyPasswordResetCode,
+  confirmPasswordReset,
   reload,
   User,
   Auth,
@@ -14,97 +25,148 @@ import {
 import { FirebaseError } from 'firebase/app';
 import { auth } from '../firebase/config';
 
-// Define a specific union type for our errors for better type safety.
 type AuthError = FirebaseError | Error;
 
-// Define the shape of our context.
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signUpWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: AuthError }>;
-  signInWithEmail: (email: string, password: string) => Promise<{ success: boolean; error?: AuthError }>;
+  signUpWithEmail: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: AuthError }>;
+  signInWithEmail: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: AuthError }>;
   signUserOut: () => Promise<{ success: boolean; error?: AuthError }>;
+  sendPasswordReset: (
+    email: string,
+  ) => Promise<{ success: boolean; error?: AuthError }>;
+  confirmEmailVerification: (
+    actionCode: string,
+  ) => Promise<{ success: boolean; error?: AuthError }>;
+  verifyResetCode: (
+    actionCode: string,
+  ) => Promise<{ success: boolean; email?: string; error?: AuthError }>;
+  confirmResetPassword: (
+    actionCode: string,
+    newPassword: string,
+  ) => Promise<{ success: boolean; error?: AuthError }>;
 }
 
-// Create the context with safe default values.
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  signUpWithEmail: async () => ({ success: false, error: new Error('Auth not initialized') }),
-  signInWithEmail: async () => ({ success: false, error: new Error('Auth not initialized') }),
-  signUserOut: async () => ({ success: false, error: new Error('Auth not initialized') }),
+  signUpWithEmail: async () => ({
+    success: false,
+    error: new Error('Auth not initialized'),
+  }),
+  signInWithEmail: async () => ({
+    success: false,
+    error: new Error('Auth not initialized'),
+  }),
+  signUserOut: async () => ({
+    success: false,
+    error: new Error('Auth not initialized'),
+  }),
+  sendPasswordReset: async () => ({
+    success: false,
+    error: new Error('Auth not initialized'),
+  }),
+  confirmEmailVerification: async () => ({
+    success: false,
+    error: new Error('Auth not initialized'),
+  }),
+  verifyResetCode: async () => ({
+    success: false,
+    error: new Error('Auth not initialized'),
+  }),
+  confirmResetPassword: async () => ({
+    success: false,
+    error: new Error('Auth not initialized'),
+  }),
 });
 
-// Create the Provider component.
 export function AuthProvider({ children }: { children: ReactNode }) {
   const firebaseAuth = useProvideFirebaseAuth(auth);
-  return <AuthContext.Provider value={firebaseAuth}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={firebaseAuth}>{children}</AuthContext.Provider>
+  );
 }
 
-// Create the consumer hook.
 export const useAuth = () => useContext(AuthContext);
 
-// This is the core logic for the authentication hook.
 function useProvideFirebaseAuth(firebaseAuth: Auth): AuthContextType {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, (authUser) => {
-      // Set the user object from Firebase. The UI can then check user.emailVerified.
       setUser(authUser);
       setLoading(false);
     });
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, [firebaseAuth]);
 
-  const signUpWithEmail = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
-      await sendEmailVerification(userCredential.user);
-      // Sign out to force a clean login after verification.
-      await signOut(firebaseAuth);
-      return { success: true };
-    } catch (error) {
-      console.error('Error signing up:', error);
-      if (error instanceof FirebaseError) {
-        return { success: false, error };
-      }
-      return { success: false, error: new Error('An unexpected error occurred during sign up.') };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signInWithEmail = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
-      // Reload user to get the latest emailVerified status.
-      await reload(userCredential.user);
-      
-      // We check against the reloaded user from auth.currentUser
-      if (auth.currentUser?.emailVerified) {
-        return { success: true };
-      } else {
+  const signUpWithEmail = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(
+          firebaseAuth,
+          email,
+          password,
+        );
+        await sendEmailVerification(userCredential.user);
         await signOut(firebaseAuth);
-        return { success: false, error: new Error('Please verify your email before logging in.') };
+        return { success: true };
+      } catch (error) {
+        console.error('Error signing up:', error);
+        if (error instanceof FirebaseError) {
+          return { success: false, error };
+        }
+        return {
+          success: false,
+          error: new Error('An unexpected error occurred during sign up.'),
+        };
       }
-    } catch (error) {
-      console.error('Error signing in:', error);
-      if (error instanceof FirebaseError) {
-        return { success: false, error };
-      }
-      return { success: false, error: new Error('An unexpected error occurred during sign in.') };
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [firebaseAuth],
+  );
 
-  const signUserOut = async () => {
-    setLoading(true);
+  const signInWithEmail = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const userCredential = await signInWithEmailAndPassword(
+          firebaseAuth,
+          email,
+          password,
+        );
+        await reload(userCredential.user);
+
+        if (userCredential.user?.emailVerified) {
+          return { success: true };
+        } else {
+          await signOut(firebaseAuth);
+          return {
+            success: false,
+            error: new Error('Please verify your email before logging in.'),
+          };
+        }
+      } catch (error) {
+        console.error('Error signing in:', error);
+        if (error instanceof FirebaseError) {
+          return { success: false, error };
+        }
+        return {
+          success: false,
+          error: new Error('An unexpected error occurred during sign in.'),
+        };
+      }
+    },
+    [firebaseAuth],
+  );
+
+  const signUserOut = useCallback(async () => {
     try {
       await signOut(firebaseAuth);
       return { success: true };
@@ -113,11 +175,80 @@ function useProvideFirebaseAuth(firebaseAuth: Auth): AuthContextType {
       if (error instanceof FirebaseError) {
         return { success: false, error };
       }
-      return { success: false, error: new Error('An unexpected error occurred during sign out.') };
-    } finally {
-      setLoading(false);
+      return {
+        success: false,
+        error: new Error('An unexpected error occurred during sign out.'),
+      };
     }
-  };
+  }, [firebaseAuth]);
+
+  const sendPasswordReset = useCallback(
+    async (email: string) => {
+      try {
+        await sendPasswordResetEmail(firebaseAuth, email);
+        return { success: true };
+      } catch (error) {
+        console.error('Error sending password reset email:', error);
+        if (error instanceof FirebaseError) {
+          return { success: false, error };
+        }
+        return {
+          success: false,
+          error: new Error('An unexpected error occurred.'),
+        };
+      }
+    },
+    [firebaseAuth],
+  );
+
+  const confirmEmailVerification = useCallback(
+    async (actionCode: string) => {
+      try {
+        await applyActionCode(firebaseAuth, actionCode);
+
+        if (firebaseAuth.currentUser) {
+          await reload(firebaseAuth.currentUser);
+        }
+        return { success: true };
+      } catch (error) {
+        console.error('Error confirming email verification:', error);
+        if (error instanceof FirebaseError) {
+          return { success: false, error };
+        }
+        return {
+          success: false,
+          error: new Error('An unexpected error occurred.'),
+        };
+      }
+    },
+    [firebaseAuth],
+  );
+
+  const verifyResetCode = useCallback(
+    async (actionCode: string) => {
+      try {
+        const email = await verifyPasswordResetCode(firebaseAuth, actionCode);
+        return { success: true, email };
+      } catch (error) {
+        console.error('Error verifying password reset code:', error);
+        return { success: false, error: error as AuthError };
+      }
+    },
+    [firebaseAuth],
+  );
+
+  const confirmResetPassword = useCallback(
+    async (actionCode: string, newPassword: string) => {
+      try {
+        await confirmPasswordReset(firebaseAuth, actionCode, newPassword);
+        return { success: true };
+      } catch (error) {
+        console.error('Error confirming password reset:', error);
+        return { success: false, error: error as AuthError };
+      }
+    },
+    [firebaseAuth],
+  );
 
   return {
     user,
@@ -125,5 +256,9 @@ function useProvideFirebaseAuth(firebaseAuth: Auth): AuthContextType {
     signUpWithEmail,
     signInWithEmail,
     signUserOut,
+    sendPasswordReset,
+    confirmEmailVerification,
+    verifyResetCode,
+    confirmResetPassword,
   };
 }

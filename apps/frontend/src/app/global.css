@@ -9,7 +9,7 @@
 }
 
 .bg-grid-pattern-light {
-  background-image: linear-gradient(rgba(0,0,0,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.07) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(0,0,0,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.15) 1px, transparent 1px);
   background-size: 2rem 2rem;
 }
 

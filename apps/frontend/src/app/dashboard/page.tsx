@@ -59,6 +59,7 @@ export default function DashboardPage() {
 
 
   if (loading || !user) {
+    console.log(user);
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
         <p className="text-gray-700">Loading user data...</p>
