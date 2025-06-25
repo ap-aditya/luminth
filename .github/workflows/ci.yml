@@ -44,9 +44,9 @@ jobs:
           key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
       - name: Sync Python Dependencies
         run: |
-          uv sync --cwd libs/db-core
-          uv sync --cwd apps/rendering_service
-          uv sync --cwd apps/user_service
+          (cd libs/db-core && uv sync)
+          (cd apps/rendering-service && uv sync)
+          (cd apps/user-service && uv sync)
 
       - name: Initialize Nx
         uses: nrwl/nx-set-shas@v4
