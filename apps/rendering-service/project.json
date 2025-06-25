@@ -4,6 +4,15 @@
   "projectType": "application",
   "sourceRoot": "apps/rendering-service/rendering_service",
   "targets": {
+    "docker-build": {
+      "executor": "@nx/workspace:run-commands",
+      "options": {
+        "command": "docker build -t rendering-service:latest -f apps/rendering-service/Dockerfile .",
+        "cwd": "{workspaceRoot}"
+      },
+      "cache": true,
+      "dependsOn": ["lock"]
+    },
     "lock": {
       "executor": "@nxlv/python:lock",
       "options": {
