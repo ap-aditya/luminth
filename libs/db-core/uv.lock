@@ -145,6 +145,7 @@ dependencies = [
     { name = "alembic" },
     { name = "asyncpg" },
     { name = "python-dotenv" },
+    { name = "ruff" },
     { name = "sqlmodel" },
 ]
 
@@ -163,6 +164,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.16.2" },
     { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
+    { name = "ruff", specifier = ">=0.11.13" },
     { name = "sqlmodel", specifier = ">=0.0.24" },
 ]
 
