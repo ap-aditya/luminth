@@ -1,5 +1,7 @@
 from fastapi import FastAPI
+
 from rendering_service.api import router as api_router
+
 app = FastAPI(title="Manim Rendering Service")
 app.include_router(api_router)
 

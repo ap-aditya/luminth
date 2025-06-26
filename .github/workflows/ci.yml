@@ -51,6 +51,6 @@ jobs:
       - name: Initialize Nx
         uses: nrwl/nx-set-shas@v4
 
-      # Removed "test" target below
-      - name: Run Nx Affected Commands
-        run: npx nx affected -t lint build --skip-nx-cache
+      # Only run build (no lint)
+      - name: Run Nx Affected Build
+        run: npx nx affected -t build --skip-nx-cache

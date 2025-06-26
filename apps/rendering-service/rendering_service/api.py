@@ -1,10 +1,12 @@
 import base64
 import logging
-import shutil
 import os
-from fastapi import APIRouter, Request, HTTPException
-from rendering_service.core.config import settings
+import shutil
+
+from fastapi import APIRouter, HTTPException, Request
+
 from rendering_service import services
+from rendering_service.core.config import settings
 
 router = APIRouter()
 

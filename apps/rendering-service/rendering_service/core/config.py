@@ -1,12 +1,12 @@
 import logging
-from typing import Optional
+
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    DROPBOX_APP_KEY: Optional[str] = None
-    DROPBOX_APP_SECRET: Optional[str] = None
-    DROPBOX_REFRESH_TOKEN: Optional[str] = None
+    DROPBOX_APP_KEY: str | None = None
+    DROPBOX_APP_SECRET: str | None = None
+    DROPBOX_REFRESH_TOKEN: str | None = None
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379

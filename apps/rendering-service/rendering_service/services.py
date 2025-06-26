@@ -1,16 +1,15 @@
 # app/services.py
-import os
-import subprocess
-import logging
-import re
-import uuid
 import json
-from typing import Dict
+import logging
+import os
+import re
+import subprocess
+import uuid
 
 import dropbox
-from dropbox.files import WriteMode
-from dropbox.exceptions import ApiError
 import redis
+from dropbox.exceptions import ApiError
+from dropbox.files import WriteMode
 
 from rendering_service.core.config import settings
 
@@ -127,7 +126,7 @@ def upload_and_get_link(file_path: str, task_id: str, scene_name: str) -> str:
         raise Exception(f"Failed to upload or create link on Dropbox for {file_name}.")
 
 
-def publish_redis_message(message: Dict):
+def publish_redis_message(message: dict):
     if not redis_client:
         logging.error("Cannot publish message: Redis client is not initialized.")
         return
