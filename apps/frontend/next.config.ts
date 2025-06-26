@@ -1,23 +1,13 @@
-//@ts-check
+import { composePlugins, withNx } from '@nx/next';
+import type { WithNxOptions } from '@nx/next/plugins/with-nx';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { composePlugins, withNx } = require('@nx/next');
-
-/**
- * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
- **/
-const nextConfig = {
+const nextConfig: WithNxOptions = {
   nx: {
-    // Set the deprecated Nx-led SVGR option to false.
-    // This is step 1 of the fix.
     svgr: false,
   },
-
-  // Add this webpack configuration to handle SVGs manually.
-  // This is step 2 of the fix.
   webpack(config) {
     // The existing rule that handles SVG imports
-    const fileLoaderRule = config.module.rules.find((rule) =>
+    const fileLoaderRule = config.module.rules.find((rule: any) =>
       rule.test?.test?.('.svg'),
     );
 
@@ -45,8 +35,7 @@ const nextConfig = {
 };
 
 const plugins = [
-  // Add more Next.js plugins to this list if needed.
   withNx,
 ];
 
-module.exports = composePlugins(...plugins)(nextConfig);
+export default composePlugins(...plugins)(nextConfig);
