@@ -5,7 +5,6 @@
     "production": ["default"],
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
-  "nxCloudId": "684aa0816455f01290aef2e6",
   "plugins": [
     {
       "plugin": "@nx/next/plugin",
@@ -31,6 +30,29 @@
         "style": "css",
         "linter": "none"
       }
+    }
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "@nrwl/nx-cloud",
+      "options": {
+        "cacheableOperations": ["build", "test", "lint", "e2e"],
+        "accessToken": "your-nx-cloud-access-token"
+      }
+    }
+  },
+  "targetDefaults": {
+    "build": {
+      "inputs": ["production", "^production"]
+    },
+    "test": {
+      "inputs": ["default"]
+    },
+    "lint": {
+      "inputs": ["default"]
+    },
+    "e2e": {
+      "inputs": ["default"]
     }
   }
 }
