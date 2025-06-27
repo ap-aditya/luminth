@@ -17,20 +17,10 @@
         "watchDepsTargetName": "watch-deps"
       }
     },
-    {
-      "plugin": "@nx/playwright/plugin",
-      "options": {
-        "targetName": "e2e"
-      }
-    }
+    { "plugin": "@nx/playwright/plugin", "options": { "targetName": "e2e" } }
   ],
   "generators": {
-    "@nx/next": {
-      "application": {
-        "style": "css",
-        "linter": "none"
-      }
-    }
+    "@nx/next": { "application": { "style": "css", "linter": "none" } }
   },
   "tasksRunnerOptions": {
     "default": {
@@ -42,17 +32,10 @@
     }
   },
   "targetDefaults": {
-    "build": {
-      "inputs": ["production", "^production"]
-    },
-    "test": {
-      "inputs": ["default"]
-    },
-    "lint": {
-      "inputs": ["default"]
-    },
-    "e2e": {
-      "inputs": ["default"]
-    }
-  }
+    "build": { "inputs": ["production", "^production"] },
+    "test": { "inputs": ["default"] },
+    "lint": { "inputs": ["default"] },
+    "e2e": { "inputs": ["default"] }
+  },
+  "nxCloudId": "685e2bc312bcfa45577a7104"
 }
