@@ -30,11 +30,10 @@ jobs:
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
           NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_IDD }}  # Fixed typo here
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_IDD }}
           NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
           NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
-          NX_CLOUD_AUTH_TOKEN: ${{ secrets.NX_CLOUD_AUTH_TOKEN }}
-        run: echo "Firebase and NX Cloud environment variables set."
+        run: echo "Firebase environment variables set."
 
       - run: yarn install --frozen-lockfile
 
@@ -70,8 +69,7 @@ jobs:
         run: uv sync
 
       - uses: nrwl/nx-set-shas@v4
-      - run: npx nx-cloud start-ci-run --no-distribution   # Added flag here
     #   - run: npx nx affected --target=lint --parallel
     #   - run: npx nx affected --target=test --parallel
       - run: npx nx affected --target=build --parallel
-      - run: npx nx-cloud stop-ci-run
+
