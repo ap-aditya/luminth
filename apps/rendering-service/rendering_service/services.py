@@ -1,4 +1,3 @@
-# app/services.py
 import json
 import logging
 import os
@@ -41,9 +40,11 @@ try:
         host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0, decode_responses=True
     )
     redis_client.ping()
-    logging.info(
-        f"Successfully connected to Redis at {settings.REDIS_HOST}:{settings.REDIS_PORT}."
+    log_message = (
+        f"Successfully connected to Redis at {settings.REDIS_HOST}:"
+        f"{settings.REDIS_PORT}."
     )
+    logging.info(log_message)
 except Exception as e:
     logging.error(f"Failed to connect to Redis on startup: {e}")
     redis_client = None
@@ -62,7 +63,7 @@ def extract_first_scene_name(code: str) -> str:
 
 def render_video(code: str, scene_name: str) -> str:
     script_path = f"/tmp/{uuid.uuid4()}.py"
-    with open(script_path, "w") as f:
+    with open(script_path, "w", encoding="utf-8") as f:
         f.write(code)
 
     logging.info(f"Starting Manim render for scene '{scene_name}'")
@@ -75,9 +76,7 @@ def render_video(code: str, scene_name: str) -> str:
         "-ql",
     ]
     try:
-        process = subprocess.run(
-            command, capture_output=True, text=True, check=True, timeout=600
-        )
+        subprocess.run(command, capture_output=True, text=True, check=True, timeout=600)
         script_name_stem = os.path.splitext(os.path.basename(script_path))[0]
         final_video_path = os.path.join(
             settings.VIDEO_OUTPUT_DIR,
@@ -94,7 +93,7 @@ def render_video(code: str, scene_name: str) -> str:
         return final_video_path
     except subprocess.CalledProcessError as e:
         logging.error(f"Manim rendering for '{scene_name}' failed. STDERR:\n{e.stderr}")
-        raise Exception(f"Manim rendering for scene '{scene_name}' failed.")
+        raise Exception(f"Manim rendering for scene '{scene_name}' failed.") from e
     finally:
         if os.path.exists(script_path):
             os.remove(script_path)
@@ -123,7 +122,9 @@ def upload_and_get_link(file_path: str, task_id: str, scene_name: str) -> str:
         ).replace("?dl=0", "")
     except ApiError as e:
         logging.error(f"Dropbox API Error for {file_name}: {e}")
-        raise Exception(f"Failed to upload or create link on Dropbox for {file_name}.")
+        raise Exception(
+            f"Failed to upload or create link on Dropbox for {file_name}."
+        ) from e
 
 
 def publish_redis_message(message: dict):

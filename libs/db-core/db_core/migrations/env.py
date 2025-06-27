@@ -9,8 +9,9 @@ from app import Team, Hero
 from alembic import context
 from dotenv import load_dotenv
 import os
+
 load_dotenv
-db_url=os.getenv("DB_URL")
+db_url = os.getenv("DB_URL")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

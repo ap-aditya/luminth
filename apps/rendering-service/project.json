@@ -52,7 +52,10 @@
       "options": {
         "lintFilePatterns": ["rendering_service", "tests"]
       },
-      "cache": true
+      "cache": true,
+      "dependsOn": [
+        "format"
+      ]
     },
     "format": {
       "executor": "@nxlv/python:ruff-format",

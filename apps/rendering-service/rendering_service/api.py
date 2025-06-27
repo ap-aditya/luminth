@@ -10,6 +10,7 @@ from rendering_service.core.config import settings
 
 router = APIRouter()
 
+
 @router.post("/")
 async def process_rendering_job(request: Request):
     envelope = await request.json()
@@ -26,7 +27,9 @@ async def process_rendering_job(request: Request):
         if not all([task_id, user_id, code_to_render]):
             raise ValueError("'task_id', 'user_id', and code data must be provided.")
     except (KeyError, TypeError, ValueError) as e:
-        raise HTTPException(status_code=400, detail=f"Invalid message payload: {e}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid message payload: {e}"
+        ) from e
 
     logging.info(f"Processing task_id '{task_id}' for user_id '{user_id}'.")
 
@@ -55,7 +58,7 @@ async def process_rendering_job(request: Request):
             "status": "failure",
             "error": str(e),
         }
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
     finally:
         if redis_payload:

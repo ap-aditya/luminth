@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Session, Relationship,create_engine, Field,select
+from sqlmodel import SQLModel, Session, Relationship, create_engine, Field, select
 from sqlalchemy.ext.asyncio import create_async_engine
 from dotenv import load_dotenv
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -6,23 +6,23 @@ import asyncio
 import os
 from typing import AsyncGenerator
 from contextlib import asynccontextmanager
-load_dotenv()
-DB_URL=os.getenv("DB_URL")
 
-engine=create_async_engine(
+load_dotenv()
+DB_URL = os.getenv("DB_URL")
+
+engine = create_async_engine(
     DB_URL,
     pool_size=10,
     max_overflow=20,
     pool_recycle=3600,
     pool_pre_ping=True,
     echo=False,
-    connect_args={
-        "ssl": True
-    }
+    connect_args={"ssl": True},
 )
 
+
 @asynccontextmanager
-async def get_session()->AsyncGenerator[AsyncSession, None]:
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSession(engine, expire_on_commit=False) as session:
         yield session
 
@@ -43,10 +43,11 @@ class Hero(SQLModel, table=True):
     team_id: int | None = Field(default=None, foreign_key="team.id")
     team: Team | None = Relationship(back_populates="heroes")
 
+
 async def create_db_and_tables():
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
-    
+
 
 async def create_heroes():
     async with get_session() as session:
@@ -57,9 +58,7 @@ async def create_heroes():
         # session.commit()
 
         hero_deadpond = Hero(
-            name="Deadpond", 
-            secret_name="Dive Wilson", 
-            team=team_z_force
+            name="Deadpond", secret_name="Dive Wilson", team=team_z_force
         )
         hero_rusty_man = Hero(
             name="Rusty-Man",
@@ -67,10 +66,7 @@ async def create_heroes():
             age=48,
             team=team_preventers,
         )
-        hero_spider_boy = Hero(
-            name="Spider-Boy",
-            secret_name="Pedro Parqueador"
-        )
+        hero_spider_boy = Hero(name="Spider-Boy", secret_name="Pedro Parqueador")
         session.add(hero_deadpond)
         session.add(hero_rusty_man)
         session.add(hero_spider_boy)
@@ -84,13 +80,15 @@ async def create_heroes():
         print("Created hero:", hero_rusty_man)
         print("Created hero:", hero_spider_boy)
 
+
 async def select_heroes():
     async with get_session() as session:
         statement = select(Team).where(Team.name == "Preventers")
-        result =await session.exec(statement)
+        result = await session.exec(statement)
         team_preventers = result.one()
         await session.refresh(team_preventers, attribute_names=["heroes"])
         print("Preventers heroes:", team_preventers.heroes)
+
 
 async def main():
     # await create_db_and_tables()
@@ -100,4 +98,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
