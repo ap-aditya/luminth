@@ -13,7 +13,6 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
-    # Define environment variables at the job level so they are available to all steps
     env:
       NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
       NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
@@ -33,9 +32,6 @@ jobs:
           node-version: 20
           cache: 'yarn'
 
-      # This step is no longer needed as the variables are set for the whole job
-      # - name: Set Environment Variables
-      #   run: echo "Firebase environment variables are set."
 
       - run: yarn install --frozen-lockfile
 
