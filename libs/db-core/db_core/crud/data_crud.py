@@ -1,0 +1,49 @@
+from uuid import UUID
+
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from ..models import Canvas, Prompt
+from ..schemas import CanvasCreate, CanvasUpdate, PromptCreate, PromptUpdate
+
+
+async def create_canvas(
+        session: AsyncSession, canvas_in: CanvasCreate, user_id: UUID
+) -> Canvas:
+    new_canvas = Canvas(**canvas_in.model_dump(), author_id=user_id)
+    session.add(new_canvas)
+    return new_canvas
+
+async def get_canvas(
+        session: AsyncSession, canvas_id: UUID
+) -> Canvas | None:
+    canvas = await session.get(Canvas, canvas_id)
+    return canvas
+
+async def update_canvas(
+        session: AsyncSession, db_canvas: Canvas, canvas_in: CanvasUpdate
+) -> Canvas:
+    update_data = canvas_in.model_dump(exclude_unset=True)
+    db_canvas.sqlmodel_update(update_data)
+    session.add(db_canvas)
+    return db_canvas
+
+async def create_prompt(
+    session: AsyncSession, prompt_in: PromptCreate, user_id: UUID
+) -> Prompt:
+    new_prompt = Prompt(**prompt_in.model_dump(), author_id=user_id)
+    session.add(new_prompt)
+    return new_prompt
+
+async def get_prompt(
+    session: AsyncSession, prompt_id: UUID
+) -> Prompt | None:
+    prompt = await session.get(Prompt, prompt_id)
+    return prompt
+
+async def update_prompt(
+    session: AsyncSession, db_prompt: Prompt, prompt_in: PromptUpdate
+) -> Prompt:
+    update_data = prompt_in.model_dump(exclude_unset=True)
+    db_prompt.sqlmodel_update(update_data)
+    session.add(db_prompt)
+    return db_prompt

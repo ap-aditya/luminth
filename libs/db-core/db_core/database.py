@@ -1,9 +1,10 @@
-from sqlalchemy.ext.asyncio import create_async_engine
-from dotenv import load_dotenv
-from sqlmodel.ext.asyncio.session import AsyncSession
 import os
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+
+from dotenv import load_dotenv
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 load_dotenv()
 DB_URL = os.getenv("DB_URL")

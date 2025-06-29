@@ -1,10 +1,13 @@
-import uuid
 import datetime
-from sqlmodel import Field, SQLModel, Relationship
+import uuid
+
+from sqlmodel import Field, Relationship, SQLModel
+
 from .user_model import User
 
+
 def get_utc_now():
-    return datetime.datetime.now(datetime.timezone.utc)
+    return datetime.datetime.now(datetime.UTC)
 
 class Prompt(SQLModel, table=True):
     prompt_id: uuid.UUID  =  Field(

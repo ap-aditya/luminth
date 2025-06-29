@@ -1,16 +1,20 @@
 import asyncio
+import os
+import sys
 from logging.config import fileConfig
 
+from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlmodel import SQLModel
-from app import Team, Hero
-from alembic import context
-from dotenv import load_dotenv
-import os
 
-load_dotenv
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, project_root)
+from db_core.models import Canvas, Prompt, User  # noqa: E402, F401
+
+load_dotenv()
 db_url = os.getenv("DB_URL")
 
 # this is the Alembic Config object, which provides

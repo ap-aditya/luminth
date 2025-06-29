@@ -1,6 +1,9 @@
-from .database import engine
-from sqlmodel import SQLModel
 import asyncio
+
+from sqlmodel import SQLModel
+
+from .database import engine
+
 
 async def create_db_and_tables():
     async with engine.begin() as conn:

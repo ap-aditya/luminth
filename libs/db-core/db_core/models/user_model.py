@@ -1,6 +1,9 @@
-import uuid
 import datetime
-from sqlmodel import Field, SQLModel, Relationship
+import uuid
+
+from sqlmodel import Field, Relationship, SQLModel
+
+
 class Canvas(SQLModel):
     pass
 
@@ -12,8 +15,25 @@ class User(SQLModel, table=True):
     user_id: uuid.UUID = Field(
         primary_key=True
     )
-    name: str = Field(index=True)
+    name: str | None
     dob: datetime.date | None= None
     avatar: str | None = None
+    prompt_daily_limit: int = Field(
+        default=10, 
+        nullable=False
+    )
+    render_daily_limit: int = Field(
+        default=30, 
+        nullable=False
+    )
+    prompt_requests_today: int = Field(
+        default=0, 
+        nullable=False
+    )
+    render_requests_today: int = Field(
+        default=0, 
+        nullable=False
+    )
+    last_request_date: datetime.date | None = None
     canvases: list["Canvas"] = Relationship(back_populates="author")
     prompts: list["Prompt"] = Relationship(back_populates="author")
