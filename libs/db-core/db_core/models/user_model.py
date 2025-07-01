@@ -12,7 +12,7 @@ class Prompt(SQLModel):
 
 
 class User(SQLModel, table=True):
-    user_id: uuid.UUID = Field(
+    user_id: str = Field(
         primary_key=True
     )
     name: str | None

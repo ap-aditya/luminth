@@ -15,10 +15,14 @@ class Prompt(SQLModel, table=True):
         primary_key=True, 
         index=True
     )
-    prompt: str
+    prompt_text: str
     code: str | None = None
     video_url:str | None = None
-    latest_render_at: datetime.datetime
-    author_id: uuid.UUID = Field(foreign_key="user.user_id", index=True)
+    updated_at: datetime.datetime = Field(
+        default_factory=get_utc_now, 
+        nullable=False
+    )
+    latest_render_at: datetime.datetime | None = None
+    author_id: str = Field(foreign_key="user.user_id", index=True)
     author: User = Relationship(back_populates="prompts")
     

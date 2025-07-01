@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Field
 import datetime
 
 class UserUpdate(SQLModel):
@@ -7,9 +7,8 @@ class UserUpdate(SQLModel):
     avatar: str | None = None
 
 class CanvasCreate(SQLModel):
-    code:str
-    title: str | None = None
-    latest_render_at: datetime.datetime
+    code:str| None=None
+    title: str = Field(Default="Untitled Canvas")
 
 class CanvasUpdate(SQLModel):
     code: str | None = None
@@ -18,12 +17,10 @@ class CanvasUpdate(SQLModel):
     latest_render_at: datetime.datetime | None = None
 
 class PromptCreate(SQLModel):
-    prompt: str
-    code: str | None = None
-    latest_render_at: datetime.datetime
+    prompt_text: str =Field(default="Describe your scene here")
     
 class PromptUpdate(SQLModel):
     video_url: str | None = None
-    prompt: str | None = None
+    prompt_text: str | None = None
     code: str | None = None
     latest_render_at: datetime.datetime | None = None

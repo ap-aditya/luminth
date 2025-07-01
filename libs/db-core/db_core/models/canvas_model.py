@@ -15,13 +15,13 @@ class Canvas(SQLModel, table=True):
         primary_key=True, 
         index=True
     )
-    title: str | None =None
+    title: str 
     code: str | None = None
     video_url:str | None = None
-    latest_render_at: datetime.datetime
-    author_id: uuid.UUID = Field(
-        foreign_key="user.user_id", 
-        index=True, 
-        ondelete="CASCADE"
+    updated_at: datetime.datetime = Field(
+        default_factory=get_utc_now, 
+        nullable=False
     )
+    latest_render_at: datetime.datetime | None = None
+    author_id: str = Field(foreign_key="user.user_id", index=True)
     author: User = Relationship(back_populates="canvases")

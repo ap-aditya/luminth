@@ -7,7 +7,7 @@ from ..schemas import CanvasCreate, CanvasUpdate, PromptCreate, PromptUpdate
 
 
 async def create_canvas(
-        session: AsyncSession, canvas_in: CanvasCreate, user_id: UUID
+        session: AsyncSession, canvas_in: CanvasCreate, user_id: str
 ) -> Canvas:
     new_canvas = Canvas(**canvas_in.model_dump(), author_id=user_id)
     session.add(new_canvas)
@@ -28,9 +28,9 @@ async def update_canvas(
     return db_canvas
 
 async def create_prompt(
-    session: AsyncSession, prompt_in: PromptCreate, user_id: UUID
+    session: AsyncSession, user_id: str
 ) -> Prompt:
-    new_prompt = Prompt(**prompt_in.model_dump(), author_id=user_id)
+    new_prompt = Prompt(author_id=user_id)
     session.add(new_prompt)
     return new_prompt
 
@@ -41,9 +41,9 @@ async def get_prompt(
     return prompt
 
 async def update_prompt(
-    session: AsyncSession, db_prompt: Prompt, prompt_in: PromptUpdate
+    session: AsyncSession, prompt: Prompt, prompt_in: PromptUpdate
 ) -> Prompt:
     update_data = prompt_in.model_dump(exclude_unset=True)
-    db_prompt.sqlmodel_update(update_data)
-    session.add(db_prompt)
-    return db_prompt
+    prompt.sqlmodel_update(update_data)
+    session.add(prompt)
+    return prompt
