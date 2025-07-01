@@ -35,5 +35,10 @@ class User(SQLModel, table=True):
         nullable=False
     )
     last_request_date: datetime.date | None = None
-    canvases: list["Canvas"] = Relationship(back_populates="author")
-    prompts: list["Prompt"] = Relationship(back_populates="author")
+    canvases: list["Canvas"] = Relationship(
+        back_populates="author", 
+        cascade_delete=True
+    )
+    prompts: list["Prompt"] = Relationship(
+        back_populates="author"
+    )

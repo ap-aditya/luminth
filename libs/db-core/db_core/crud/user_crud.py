@@ -17,7 +17,10 @@ async def get_user(
     session: AsyncSession, user_id: UUID
 ) -> User | None:
     user = await session.get(User, user_id)
-    return user
+    if user:
+        return user
+    else:
+        return None
 
 async def update_user(
     session: AsyncSession, db_user: User, user_in: UserUpdate
@@ -26,3 +29,11 @@ async def update_user(
     db_user.sqlmodel_update(update_data)
     session.add(db_user)
     return db_user
+
+async def delete_user(
+    session: AsyncSession, user_id: UUID
+) -> None:
+    user = await get_user(session, user_id)
+    if user:
+        session.delete(user)
+        
