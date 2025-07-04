@@ -1,16 +1,18 @@
 import asyncio
 import logging
+
 import google.generativeai as genai
-from ..core.config import settings
-from .code_validator import parse_manim_code
-from .code_validator import is_code_safe
+
+from ..dependencies.config import settings
+from .code_validator import is_code_safe, parse_manim_code
+
 model = None
 try:
     if not settings.GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY environment variable is not set.")
-    
+
     genai.configure(api_key=settings.GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel("gemini-1.5-flash")
     logging.info("Gemini API client configured successfully.")
 
 except Exception as e:
@@ -19,7 +21,9 @@ except Exception as e:
 
 async def generate_manim_code(prompt: str, max_retries: int = 3) -> str:
     if not model:
-        raise ConnectionError("Gemini API client is not initialized. Check server logs.")
+        raise ConnectionError(
+            "Gemini API client is not initialized. Check server logs."
+        )
 
     system_prompt = """You are a Manim expert. Your task is to write clean, 
     correct, and complete Python code for a Manim scene based on the user's request.
@@ -30,9 +34,9 @@ async def generate_manim_code(prompt: str, max_retries: int = 3) -> str:
     - The code must define a single class that inherits from `manim.Scene`.
     - Do NOT include any comments in the generated code.
     - Do NOT include any `os` or `sys` imports or any other system commands.
-    - Do NOT use any external libraries that are not part of the standard Manim installation."""
+    - Do NOT use any external libraries that are not part of the standard Manim installation.""" #noqa: E501
 
-    current_prompt = f"{system_prompt}\n\nUSER REQUEST:\n\"{prompt}\""
+    current_prompt = f'{system_prompt}\n\nUSER REQUEST:\n"{prompt}"'
 
     for attempt in range(max_retries):
         logging.info(f"Generating Manim code... (Attempt {attempt + 1}/{max_retries})")
@@ -56,8 +60,12 @@ async def generate_manim_code(prompt: str, max_retries: int = 3) -> str:
                 Do not repeat the mistake."""
 
         except Exception as e:
-            logging.error(f"An exception occurred during generation attempt {attempt + 1}: {e}")
+            logging.error(
+                f"An exception occurred during generation attempt {attempt + 1}: {e}"
+            )
             if attempt == max_retries - 1:
                 raise
-    
-    raise ValueError(f"Failed to generate safe and valid Manim code after {max_retries} attempts.")
+
+    raise ValueError(
+        f"Failed to generate safe and valid Manim code after {max_retries} attempts."
+    )
