@@ -7,9 +7,7 @@ node_modules/
 **/__pycache__/
 **/*.pyc
 
-apps/rendering_service/dist/
-apps/user_service/dist/
-
+**/dist
 **/.env
 
 **/project.json
@@ -18,4 +16,7 @@ apps/user_service/dist/
 coverage/
 reports/
 htmlcov/
-.pytest_cache/
+**/.pytest_cache
+**/ruff_cache
+**/.coverage
+libs/db-core/db_core/migrations
