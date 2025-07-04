@@ -63,7 +63,10 @@ async def get_dashboard_data(
     uid = user.get('uid')
     db_user = await user_crud.get_user(session, uid)
     if not db_user:
-        raise HTTPException(status_code=404, detail="User profile not found.")
+        db_user=await user_crud.create_user(session, uid)
+        await session.commit()
+        await session.refresh(db_user)
+
     
     recent_activity = await _get_unified_history(session, user_id=uid, limit=10)
 
