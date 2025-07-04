@@ -3,10 +3,9 @@ from typing import Annotated
 from db_core.crud import data_crud, user_crud
 from db_core.database import get_session
 from db_core.models import Canvas, Prompt, User
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from ..dependencies.security import get_current_user
 from ..models import HistoryItem, HistoryItemType
 
