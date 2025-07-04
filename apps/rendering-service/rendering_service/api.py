@@ -2,9 +2,8 @@ import base64
 import logging
 import os
 import shutil
-
+from dropbox.exceptions import ApiError
 from fastapi import APIRouter, HTTPException, Request
-
 from rendering_service import services
 from rendering_service.core.config import settings
 
@@ -22,16 +21,16 @@ async def process_rendering_job(request: Request):
 
     try:
         code_to_render = base64.b64decode(message["data"]).decode("utf-8").strip()
-        task_id = attributes.get("task_id")
+        job_id = attributes.get("job_id")
         user_id = attributes.get("user_id")
-        if not all([task_id, user_id, code_to_render]):
-            raise ValueError("'task_id', 'user_id', and code data must be provided.")
+        if not all([job_id, user_id, code_to_render]):
+            raise ValueError("'job_id', 'user_id', and code data must be provided.")
     except (KeyError, TypeError, ValueError) as e:
         raise HTTPException(
             status_code=400, detail=f"Invalid message payload: {e}"
         ) from e
 
-    logging.info(f"Processing task_id '{task_id}' for user_id '{user_id}'.")
+    logging.info(f"Processing job_id '{job_id}' for user_id '{user_id}'.")
 
     redis_payload = {}
     final_status = "failure"
@@ -40,25 +39,36 @@ async def process_rendering_job(request: Request):
         scene_name = services.extract_first_scene_name(code_to_render)
         video_file_path = services.render_video(code_to_render, scene_name)
         dropbox_link = services.upload_and_get_link(
-            video_file_path, task_id, scene_name
+            video_file_path, job_id, scene_name
         )
         final_status = "success"
         redis_payload = {
-            "task_id": task_id,
+            "job_id": job_id,
             "user_id": user_id,
             "status": final_status,
             "video_url": dropbox_link,
+            "source_id": attributes.get("source_id"),
+            "source_type": attributes.get("source_type"),
+            "request_timestamp": attributes.get("request_timestamp"),
         }
+    except ApiError as e:
+        logging.warning(f"Job '{job_id}' failed with a retryable Dropbox error: {e}")
+        raise HTTPException(
+            status_code=503, 
+            detail=f"Dropbox service error: {e}"
+        ) from e
 
     except Exception as e:
-        logging.error(f"Task '{task_id}' failed: {e}")
+        logging.error(f"Job '{job_id}' failed: {e}")
         redis_payload = {
-            "task_id": task_id,
+            "job_id": job_id,
             "user_id": user_id,
             "status": "failure",
             "error": str(e),
+            "source_id": attributes.get("source_id"),
+            "source_type": attributes.get("source_type"),
+            "request_timestamp": attributes.get("request_timestamp"),
         }
-        raise HTTPException(status_code=500, detail=str(e)) from e
 
     finally:
         if redis_payload:
@@ -67,4 +77,4 @@ async def process_rendering_job(request: Request):
             shutil.rmtree(settings.VIDEO_OUTPUT_DIR)
             logging.info(f"Cleaned up temporary directory: {settings.VIDEO_OUTPUT_DIR}")
 
-    return {"status": final_status, "task_id": task_id}
+    return {"status": final_status, "job_id": job_id}
