@@ -47,9 +47,10 @@ try:
             f"Successfully connected to local Redis at {settings.REDIS_HOST}:"
             f"{settings.REDIS_PORT}."
         )
-        logging.info(log_message) 
-    redis_client.ping()
+        logging.info(log_message)
 
+    redis_client.ping()
+    
 except Exception as e:
     logging.error(f"Failed to connect to Redis/Valkey on startup: {e}")
     redis_client = None
