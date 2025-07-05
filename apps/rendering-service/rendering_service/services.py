@@ -36,19 +36,23 @@ else:
 
 redis_client = None
 try:
-    redis_client = redis.Redis(
-        host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0, decode_responses=True
-    )
+    if hasattr(settings, 'VALKEY_URI') and settings.VALKEY_URI:
+        redis_client = redis.Redis.from_url(settings.VALKEY_URI, decode_responses=True)
+        logging.info("Successfully connected to Aiven for Valkey.")
+    else:
+        redis_client = redis.Redis(
+            host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0, decode_responses=True
+        )
+        log_message = (
+            f"Successfully connected to local Redis at {settings.REDIS_HOST}:"
+            f"{settings.REDIS_PORT}."
+        )
+        logging.info(log_message) 
     redis_client.ping()
-    log_message = (
-        f"Successfully connected to Redis at {settings.REDIS_HOST}:"
-        f"{settings.REDIS_PORT}."
-    )
-    logging.info(log_message)
-except Exception as e:
-    logging.error(f"Failed to connect to Redis on startup: {e}")
-    redis_client = None
 
+except Exception as e:
+    logging.error(f"Failed to connect to Redis/Valkey on startup: {e}")
+    redis_client = None
 
 def extract_first_scene_name(code: str) -> str:
     match = re.search(r"class\s+(\w+)\s*\((?:.*\b)?Scene\b(?:.*)?\):", code)
@@ -129,7 +133,7 @@ def upload_and_get_link(file_path: str, task_id: str, scene_name: str) -> str:
 
 def publish_redis_message(message: dict):
     if not redis_client:
-        logging.error("Cannot publish message: Redis client is not initialized.")
+        logging.error("Cannot publish message: Redis/Valkey client is not initialized.")
         return
     try:
         logging.info(

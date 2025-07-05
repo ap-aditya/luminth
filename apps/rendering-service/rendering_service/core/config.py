@@ -7,9 +7,9 @@ class Settings(BaseSettings):
     DROPBOX_APP_KEY: str | None = None
     DROPBOX_APP_SECRET: str | None = None
     DROPBOX_REFRESH_TOKEN: str | None = None
-
-    REDIS_HOST: str = "localhost"
-    REDIS_PORT: int = 6379
+    VALKEY_URI: str | None= None
+    REDIS_HOST: str |None =None
+    REDIS_PORT: int |None = None
     REDIS_CHANNEL: str = "video_links"
 
     VIDEO_OUTPUT_DIR: str = "/tmp/media"
