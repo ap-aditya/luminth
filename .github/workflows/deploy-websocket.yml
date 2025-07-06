@@ -1,0 +1,64 @@
+name: Deploy Websocket to Cloud Run
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/websocket-service/**'
+      - 'libs/**'
+env:
+  GCP_REGION: us-central1
+  ARTIFACT_REPO: luminth-services
+  SERVICE_NAME: websocket-service
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to Cloud Run Service
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+
+      - name: Build and Push Docker Image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/${{ env.SERVICE_NAME }}/Dockerfile
+          push: true
+          tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to Cloud Run Service
+        id: deploy
+        uses: google-github-actions/deploy-run@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.GCP_REGION }}
+          image: ${{ steps.build.outputs.digest }}
+          flags: >-
+            --session-affinity
+            --cpu=1
+            --memory=512Mi
+          env_vars: |
+            VALKEY_URI=${{ secrets.VALKEY_URI }}
+            FIREBASE_SERVICE_ACCOUNT_KEY=${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+            DB_URL=${{ secrets.DB_URL }}
