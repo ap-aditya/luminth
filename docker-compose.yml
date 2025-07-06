@@ -1,16 +1,38 @@
 services:
   rendering-service:
     build:
-      context: .
-      dockerfile: apps/rendering-service/Dockerfile
+      context: ./apps/rendering-service
+      dockerfile: Dockerfile
     image: rendering-service:latest
     env_file:
-      - .env
+      - ./apps/rendering-service/.env
     ports:
       - "8080:8080"
     depends_on:
       - redis
 
   redis:
-    image: redis:latest
+    image: redis:7-alpine
     container_name: luminth-redis
+    ports:
+      - "6379:6379"
+
+  user-service:
+    build:
+      context: .
+      dockerfile: apps/user-service/Dockerfile
+    image: user-service:latest
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    environment:
+      - emulator_host=pubsub-emulator:8085
+    depends_on:
+      - pubsub-emulator
+
+  pubsub-emulator:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
+    command: gcloud beta emulators pubsub start --project=local-project --host-port=0.0.0.0:8085
+    ports:
+      - "8085:8085"
