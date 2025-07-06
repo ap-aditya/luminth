@@ -1,13 +1,22 @@
 import datetime
 import logging
 import uuid
-
+from google.api_core.client_options import ClientOptions
+from google.auth.credentials import AnonymousCredentials
 from google.cloud import pubsub_v1
 
 from ..dependencies.config import settings
 
 try:
-    publisher = pubsub_v1.PublisherClient()
+    if settings.emulator_host:
+        logging.info(f"Connecting to Pub/Sub emulator at {settings.emulator_host}")
+        publisher = pubsub_v1.PublisherClient(
+            credentials=AnonymousCredentials(),
+            client_options=ClientOptions(api_endpoint=settings.emulator_host)
+        )
+    else:
+        logging.info("Connecting to production Pub/Sub")
+        publisher = pubsub_v1.PublisherClient()
     topic_path = publisher.topic_path(settings.GCP_PROJECT_ID, settings.RENDER_TOPIC_ID)
     logging.info(f"Pub/Sub publisher initialized for topic: {topic_path}")
 except Exception as e:
