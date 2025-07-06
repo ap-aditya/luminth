@@ -11,9 +11,8 @@ class Settings(BaseSettings):
     REDIS_HOST: str |None =None
     REDIS_PORT: int |None = None
     REDIS_CHANNEL: str = "video_links"
-
+    SUBSCRIPTION_NAME: str | None = "manim-render-requests-sub"
     VIDEO_OUTPUT_DIR: str = "/tmp/media"
-
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
