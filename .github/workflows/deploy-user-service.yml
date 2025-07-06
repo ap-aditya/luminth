@@ -1,0 +1,70 @@
+name: Deploy User Service to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/user-service/**'
+      - 'libs/**'
+
+env:
+  GCP_REGION: us-central1 
+  ARTIFACT_REPO: luminth-services
+  SERVICE_NAME: user-service
+  CLOUD_RUN_SERVICE: user-service-api
+  USER_SERVICE_SA: user-service-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy User Service
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+
+      - name: Build and Push Docker Image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/${{ env.SERVICE_NAME }}/Dockerfile
+          push: true
+          tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-run@v2
+        with:
+          service: ${{ env.CLOUD_RUN_SERVICE }}
+          region: ${{ env.GCP_REGION }}
+          image: ${{ steps.build.outputs.digest }}
+          service_account: ${{ env.USER_SERVICE_SA }}
+          env_vars: |
+            GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
+            RENDER_TOPIC_ID=manim-render-requests
+            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+            FIREBASE_SERVICE_ACCOUNT_KEY=${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            DB_URL=${{ secrets.DB_URL }}
+            REDIS_RL_URL=${{ secrets.REDIS_RL_URL }}
+            INTERNAL_API_SECRET=${{ secrets.INTERNAL_API_SECRET }}
