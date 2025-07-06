@@ -17,8 +17,8 @@ router = APIRouter(dependencies=[Depends(get_current_user)])
 
 @router.get("/me", response_model=User, summary="Get Current User's Profile")
 async def get_current_user_profile(
-    user: Annotated[dict, Depends(get_current_user)], 
-    session: Annotated[AsyncSession, Depends(get_session)]
+    user: Annotated[dict, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ):
     uid = user.get("uid")
     logging.info(f"Fetching profile for user UID: {uid}")
@@ -106,8 +106,8 @@ async def update_current_user_profile(
     summary="Delete Current User's Account",
 )
 async def delete_current_user_account(
-    user: Annotated[dict, Depends(get_current_user)], 
-    session: Annotated[AsyncSession, Depends(get_session)]
+    user: Annotated[dict, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ):
     uid = user.get("uid")
     logging.info(f"Initiating account deletion for user UID: {uid}")
@@ -124,10 +124,9 @@ async def delete_current_user_account(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=(
-                "Failed to delete user from authentication service."
-                "Please try again."
-            ) 
-        )from e
+                "Failed to delete user from authentication service." "Please try again."
+            ),
+        ) from e
 
     try:
         await user_crud.delete_user(session, user_id=uid)
@@ -139,7 +138,7 @@ async def delete_current_user_account(
         await session.rollback()
         logging.critical(
             f"CRITICAL: User {uid} was deleted from Firebase Auth"
-             " but FAILED to be deleted from local DB: {e}"
+            " but FAILED to be deleted from local DB: {e}"
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

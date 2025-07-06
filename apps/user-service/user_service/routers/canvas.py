@@ -140,9 +140,7 @@ async def render_canvas_code(
 
 
 @router.get("/{canvas_id}", response_model=CanvasResponse, summary="Get a Canvas by ID")
-async def get_canvas(
-    canvas: Annotated[Canvas, Depends(get_canvas_for_user)]
-):
+async def get_canvas(canvas: Annotated[Canvas, Depends(get_canvas_for_user)]):
     return canvas
 
 

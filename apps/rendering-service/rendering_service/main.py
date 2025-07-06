@@ -2,25 +2,42 @@ import base64
 import logging
 import os
 import shutil
+from contextlib import asynccontextmanager
 from typing import Any
+
+from dropbox.exceptions import ApiError
 from fastapi import FastAPI, HTTPException, Response
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
+
 from rendering_service import services
 from rendering_service.core.config import settings
-from dropbox.exceptions import ApiError
+
 
 class PubSubMessage(BaseModel):
     data: str
     attributes: dict[str, Any] = Field(default_factory=dict)
+
 
 class PushRequest(BaseModel):
     message: PubSubMessage
     subscription: str
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logging.info("Application startup: Initializing services...")
+    await services.initialize_services()
+    logging.info("Application startup: Services initialized.")
+    yield
+    logging.info("Application shutdown: Cleaning up resources.")
+
+
 app = FastAPI(
     title="Rendering Service",
     description="Accepts Pub/Sub push requests to render Manim videos.",
+    lifespan=lifespan,
+    version="1.0.0",
 )
 
 
@@ -57,10 +74,10 @@ def process_message(message: PubSubMessage) -> bool:
             "source_type": attributes.get("source_type"),
             "request_timestamp": attributes.get("request_timestamp"),
         }
-        return True 
+        return True
     except ApiError as e:
         logging.warning(f"Job '{job_id}' failed with a retryable Dropbox error: {e}")
-        return False 
+        return False
 
     except Exception as e:
         logging.error(
@@ -75,7 +92,7 @@ def process_message(message: PubSubMessage) -> bool:
             "source_type": attributes.get("source_type"),
             "request_timestamp": attributes.get("request_timestamp"),
         }
-        return True 
+        return True
 
     finally:
         if redis_payload:
@@ -87,7 +104,7 @@ def process_message(message: PubSubMessage) -> bool:
 
 @app.post("/")
 async def pubsub_push_endpoint(request: PushRequest):
-    should_acknowledge = process_message(request.message)
+    should_acknowledge = await run_in_threadpool(process_message, request.message)
 
     if should_acknowledge:
         return Response(status_code=204)
@@ -95,7 +112,8 @@ async def pubsub_push_endpoint(request: PushRequest):
         raise HTTPException(
             status_code=503, detail="Service temporarily unavailable, please retry."
         )
-    
+
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "message": "Rendering service is running."}

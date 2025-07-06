@@ -13,47 +13,59 @@ from dropbox.files import WriteMode
 from rendering_service.core.config import settings
 
 dbx = None
-if all(
-    [
-        settings.DROPBOX_APP_KEY,
-        settings.DROPBOX_APP_SECRET,
-        settings.DROPBOX_REFRESH_TOKEN,
-    ]
-):
-    try:
-        dbx = dropbox.Dropbox(
-            app_key=settings.DROPBOX_APP_KEY,
-            app_secret=settings.DROPBOX_APP_SECRET,
-            oauth2_refresh_token=settings.DROPBOX_REFRESH_TOKEN,
-        )
-        dbx.users_get_current_account()
-        logging.info("Successfully connected to Dropbox.")
-    except Exception as e:
-        logging.error(f"Failed to connect to Dropbox on startup: {e}")
-        dbx = None
-else:
-    logging.warning("Dropbox credentials not fully configured.")
 
-redis_client = None
-try:
-    if hasattr(settings, 'VALKEY_URI') and settings.VALKEY_URI:
-        redis_client = redis.Redis.from_url(settings.VALKEY_URI, decode_responses=True)
-        logging.info("Successfully connected to Aiven for Valkey.")
+
+async def initialize_services():
+    global dbx, redis_client
+    from fastapi.concurrency import run_in_threadpool
+
+    if all(
+        [
+            settings.DROPBOX_APP_KEY,
+            settings.DROPBOX_APP_SECRET,
+            settings.DROPBOX_REFRESH_TOKEN,
+        ]
+    ):
+        try:
+            dbx = dropbox.Dropbox(
+                app_key=settings.DROPBOX_APP_KEY,
+                app_secret=settings.DROPBOX_APP_SECRET,
+                oauth2_refresh_token=settings.DROPBOX_REFRESH_TOKEN,
+            )
+            await run_in_threadpool(dbx.users_get_current_account)
+            logging.info("Successfully connected to Dropbox.")
+        except Exception as e:
+            logging.error(f"Failed to connect to Dropbox on startup: {e}")
+            dbx = None
     else:
-        redis_client = redis.Redis(
-            host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0, decode_responses=True
-        )
-        log_message = (
-            f"Successfully connected to local Redis at {settings.REDIS_HOST}:"
-            f"{settings.REDIS_PORT}."
-        )
-        logging.info(log_message)
+        logging.warning("Dropbox credentials not fully configured.")
 
-    redis_client.ping()
-    
-except Exception as e:
-    logging.error(f"Failed to connect to Redis/Valkey on startup: {e}")
     redis_client = None
+    try:
+        if hasattr(settings, "VALKEY_URI") and settings.VALKEY_URI:
+            redis_client = redis.Redis.from_url(
+                settings.VALKEY_URI, decode_responses=True
+            )
+            logging.info("Successfully connected to Aiven for Valkey.")
+        else:
+            redis_client = redis.Redis(
+                host=settings.REDIS_HOST,
+                port=settings.REDIS_PORT,
+                db=0,
+                decode_responses=True,
+            )
+            log_message = (
+                f"Successfully connected to local Redis at {settings.REDIS_HOST}:"
+                f"{settings.REDIS_PORT}."
+            )
+            logging.info(log_message)
+
+        await run_in_threadpool(redis_client.ping)
+
+    except Exception as e:
+        logging.error(f"Failed to connect to Redis/Valkey on startup: {e}")
+        redis_client = None
+
 
 def extract_first_scene_name(code: str) -> str:
     match = re.search(r"class\s+(\w+)\s*\((?:.*\b)?Scene\b(?:.*)?\):", code)

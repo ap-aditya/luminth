@@ -1,10 +1,12 @@
 import asyncio
 import json
 import logging
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
+
 import redis.asyncio as redis
 from redis.asyncio.client import PubSub
 from redis.exceptions import ConnectionError, RedisError
+
 from .dependencies.config import settings
 from .websocket_manager import ConnectionManager
 
@@ -28,7 +30,8 @@ class RedisClient:
                 )
             else:
                 logging.info(
-                    f"Connecting to Redis at {settings.REDIS_HOST}:{settings.REDIS_PORT}..."
+                    "Connecting to Redis at "
+                    f"{settings.REDIS_HOST}:{settings.REDIS_PORT}..."
                 )
                 self.redis_connection = redis.Redis(
                     host=settings.REDIS_HOST,

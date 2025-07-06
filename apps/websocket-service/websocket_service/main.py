@@ -1,15 +1,18 @@
 import asyncio
-import logging
 import json
+import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, WebSocket, Depends, WebSocketDisconnect, Query
 from typing import Annotated
-from .dependencies.config import settings
-from .dependencies.security import get_current_user
-from .websocket_manager import ConnectionManager
-from .redis_client import RedisClient
-from .dependencies.message_processing import process_payload
+
 from db_core.database import get_session
+from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect
+
+from .dependencies.config import settings
+from .dependencies.message_processing import process_payload
+from .dependencies.security import get_current_user, initialize_firebase
+from .redis_client import RedisClient
+from .websocket_manager import ConnectionManager
+
 connection_manager = ConnectionManager()
 redis_client = RedisClient()
 
@@ -46,7 +49,7 @@ async def lifespan(app: FastAPI):
     logging.info("Application startup: Initializing resources...")
     listener_task = asyncio.create_task(redis_message_processor())
     logging.info("Redis listener task has been started.")
-
+    await initialize_firebase()
     yield
 
     logging.info("Application shutdown: Cleaning up resources...")
@@ -62,7 +65,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="WebSocket Progress Service",
-    description="Streams real-time progress updates from a Redis backend to authenticated users.",
+    description="Streams real-time progress updates from a Redis backend to authenticated users.",  # noqa: E501
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -76,7 +79,7 @@ async def websocket_endpoint(
     user_id = user.get("uid")
     await connection_manager.connect(websocket, user_id)
     logging.info(
-        f"User '{user_id}' connected. Total connections for user: {len(connection_manager.get_user_connections(user_id))}"
+        f"User '{user_id}' connected. Total connections for user: {len(connection_manager.get_user_connections(user_id))}"  # noqa: E501
     )
 
     try:

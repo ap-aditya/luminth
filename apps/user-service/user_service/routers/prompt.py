@@ -92,8 +92,8 @@ async def submit_job(prompt: Prompt):
     "/", status_code=status.HTTP_201_CREATED, summary="Create a New Blank Prompt"
 )
 async def create_new_prompt(
-    user: Annotated[dict,Depends(get_current_user)],
-    session: Annotated[AsyncSession,Depends(get_session)]
+    user: Annotated[dict, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ):
     uid = user.get("uid")
     logging.info(f"User {uid} creating new prompt.")
@@ -107,8 +107,8 @@ async def create_new_prompt(
 
 
 @router.post(
-    "/generate/{prompt_id}/", 
-    response_model=PromptResponse, 
+    "/generate/{prompt_id}/",
+    response_model=PromptResponse,
     summary="Generate Code from Prompt Text",
 )
 async def generate_code_from_prompt(

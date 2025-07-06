@@ -2,14 +2,14 @@ import asyncio
 import json
 import logging
 from collections import defaultdict
-from typing import List
+
 from fastapi import WebSocket
 from starlette.websockets import WebSocketState
 
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: dict[str, List[WebSocket]] = defaultdict(list)
+        self.active_connections: dict[str, list[WebSocket]] = defaultdict(list)
 
     async def connect(self, websocket: WebSocket, user_id: str):
         await websocket.accept()
@@ -52,10 +52,10 @@ class ConnectionManager:
 
         if stale_connections:
             logging.debug(
-                f"Removing {len(stale_connections)} stale connection(s) for user {user_id}."
+                f"Removing {len(stale_connections)} stale connection(s) for user {user_id}." # noqa: E501
             )
             for conn in set(stale_connections):
                 self.disconnect(conn, user_id)
 
-    def get_user_connections(self, user_id: str) -> List[WebSocket]:
+    def get_user_connections(self, user_id: str) -> list[WebSocket]:
         return self.active_connections.get(user_id, [])

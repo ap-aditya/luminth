@@ -34,7 +34,7 @@ async def generate_manim_code(prompt: str, max_retries: int = 3) -> str:
     - The code must define a single class that inherits from `manim.Scene`.
     - Do NOT include any comments in the generated code.
     - Do NOT include any `os` or `sys` imports or any other system commands.
-    - Do NOT use any external libraries that are not part of the standard Manim installation.""" #noqa: E501
+    - Do NOT use any external libraries that are not part of the standard Manim installation."""  # noqa: E501
 
     current_prompt = f'{system_prompt}\n\nUSER REQUEST:\n"{prompt}"'
 

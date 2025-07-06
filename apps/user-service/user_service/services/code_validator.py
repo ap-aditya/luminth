@@ -41,9 +41,7 @@ class CodeVisitor(ast.NodeVisitor):
             )
 
         if isinstance(node.func, ast.Attribute) and node.func.attr == "__import__":
-            self.violations.append(
-                "Forbidden dynamic import `__import__` detected."
-            )
+            self.violations.append("Forbidden dynamic import `__import__` detected.")
 
         self.generic_visit(node)
 

@@ -43,6 +43,7 @@ class HistoryItemType(str, Enum):
     CANVAS = "canvas"
     PROMPT = "prompt"
 
+
 class HistoryItem(BaseModel):
     item_type: HistoryItemType
     item_id: uuid.UUID
