@@ -23,16 +23,36 @@ services:
       dockerfile: apps/user-service/Dockerfile
     image: user-service:latest
     env_file:
-      - .env
+      - apps/user-service/.env
     ports:
       - "8000:8000"
     environment:
       - emulator_host=pubsub-emulator:8085
     depends_on:
       - pubsub-emulator
+      - redis-rl
+
+  websocket-service:
+    build:
+      context: .
+      dockerfile: apps/websocket-service/Dockerfile
+    image: websocket-service:latest
+    env_file:
+      - apps/websocket-service/.env
+    ports:
+      - "8086:8086"
+    depends_on:
+      - redis
 
   pubsub-emulator:
     image: gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
     command: gcloud beta emulators pubsub start --project=local-project --host-port=0.0.0.0:8085
     ports:
       - "8085:8085"
+
+  redis-rl:
+    image: redis:7-alpine
+    container_name: luminth-redis-rl
+    ports:
+        - "6380:6379"
+
