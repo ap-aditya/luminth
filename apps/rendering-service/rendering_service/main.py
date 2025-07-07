@@ -117,4 +117,4 @@ async def pubsub_push_endpoint(request: PushRequest):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "message": "Rendering service is running."}
+    return {"status": "ok", "message": "Rendering-service is running."}

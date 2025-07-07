@@ -16,6 +16,7 @@ dbx = None
 async def initialize_services():
     global dbx, redis_client
     from fastapi.concurrency import run_in_threadpool
+
     if all(
         [
             settings.DROPBOX_APP_KEY,
@@ -35,9 +36,7 @@ async def initialize_services():
             logging.error(f"Failed to connect to Dropbox on startup: {e}")
             dbx = None
     else:
-        logging.warning(
-            "Dropbox credentials not fully configured."
-        )
+        logging.warning("Dropbox credentials not fully configured.")
 
     redis_client = None
     try:
@@ -112,7 +111,7 @@ def render_video(code: str, scene_name: str) -> str:
         raise Exception(f"Manim rendering for scene '{scene_name}' failed.") from e
     finally:
         if os.path.exists(script_path):
-            os.remove( script_path)
+            os.remove(script_path)
 
 
 def upload_and_get_link(file_path: str, task_id: str, scene_name: str) -> str:
