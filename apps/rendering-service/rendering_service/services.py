@@ -62,7 +62,7 @@ async def initialize_services():
 
         await run_in_threadpool(redis_client.ping)
 
-    except Exception as  e:
+    except Exception as e:
         logging.error(f"Failed to connect to Redis/Valkey on startup: {e}")
         redis_client = None
 
