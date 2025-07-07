@@ -13,7 +13,6 @@ env:
   ARTIFACT_REPO: luminth-services
   SERVICE_NAME: user-service
   CLOUD_RUN_SERVICE: user-service-api
-  USER_SERVICE_SA: user-service-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
 
 jobs:
   build-and-deploy:

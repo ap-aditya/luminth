@@ -16,7 +16,7 @@ async def get_user(
 ) -> User | None:
     statement = select(User).where(User.user_id == user_id)
     if for_update:
-        statement = statement.with_for_update()
+        statement =  statement.with_for_update()
     user = await session.exec(statement)
     if user:
         return user
