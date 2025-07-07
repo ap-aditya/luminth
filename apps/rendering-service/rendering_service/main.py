@@ -30,6 +30,7 @@ async def lifespan(app: FastAPI):
     await services.initialize_services()
     logging.info("Application startup: Services initialized.")
     yield
+
     logging.info("Application shutdown: Cleaning up resources.")
 
 
@@ -110,7 +111,7 @@ async def pubsub_push_endpoint(request: PushRequest):
         return Response(status_code=204)
     else:
         raise HTTPException(
-            status_code=503, detail="Service temporarily unavailable, please retry."
+            status_code=503, detail="Service temporarily unavailable, please-retry."
         )
 
 
