@@ -65,6 +65,7 @@ async def delete_canvas(session: AsyncSession, canvas_id: UUID) -> None:
     await session.delete(canvas)
     return
 
+
 async def get_canvases_for_user(
     session: AsyncSession, user_id: str, limit: int = 10
 ) -> list[Canvas]:
@@ -72,6 +73,7 @@ async def get_canvases_for_user(
         select(Canvas).where(Canvas.author_id == user_id).limit(limit)
     )
     return canvases.all()
+
 
 async def get_prompts_for_user(
     session: AsyncSession, user_id: str, limit: int = 10

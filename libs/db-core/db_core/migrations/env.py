@@ -10,7 +10,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlmodel import SQLModel
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, project_root)
 from db_core.models import Canvas, Prompt, User  # noqa: E402, F401
 
