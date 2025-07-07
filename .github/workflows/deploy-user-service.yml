@@ -62,7 +62,6 @@ jobs:
             GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
             RENDER_TOPIC_ID=manim-render-requests
             FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-            FIREBASE_SERVICE_ACCOUNT_KEY=${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
             GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
             DB_URL=${{ secrets.DB_URL }}
             REDIS_RL_URL=${{ secrets.REDIS_RL_URL }}

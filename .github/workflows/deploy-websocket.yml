@@ -60,5 +60,4 @@ jobs:
             --memory=512Mi
           env_vars: |
             VALKEY_URI=${{ secrets.VALKEY_URI }}
-            FIREBASE_SERVICE_ACCOUNT_KEY=${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
             DB_URL=${{ secrets.DB_URL }}
