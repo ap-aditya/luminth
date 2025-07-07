@@ -5,6 +5,7 @@ import uuid
 from google.api_core.client_options import ClientOptions
 from google.auth.credentials import AnonymousCredentials
 from google.cloud import pubsub_v1
+
 from ..dependencies.config import settings
 
 publisher = None

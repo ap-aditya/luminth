@@ -1,6 +1,6 @@
-from sqlmodel import select
 from uuid import UUID
 
+from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from ..models import Canvas, Prompt
