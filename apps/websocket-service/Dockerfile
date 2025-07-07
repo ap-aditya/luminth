@@ -20,4 +20,4 @@ RUN uv sync --no-cache
 WORKDIR /app
 
 ENV PATH="/app/apps/websocket-service/.venv/bin:$PATH"
-CMD ["gunicorn", "--chdir", "/app/apps/websocket-service", "-w", "1", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:$PORT", "websocket_service.main:app"]
+CMD ["gunicorn", "--chdir", "/app/apps/websocket-service", "-w", "1", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8080", "websocket_service.main:app"]
