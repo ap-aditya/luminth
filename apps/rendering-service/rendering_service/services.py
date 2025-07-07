@@ -113,7 +113,7 @@ def render_video(code: str, scene_name: str) -> str:
         raise Exception(f"Manim rendering for scene '{scene_name}' failed.") from e
     finally:
         if os.path.exists(script_path):
-            os.remove(script_path)
+            os.remove( script_path)
 
 
 def upload_and_get_link(file_path: str, task_id: str, scene_name: str) -> str:

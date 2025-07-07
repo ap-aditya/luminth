@@ -1,22 +1,19 @@
-name: Deploy User Service to Cloud Run
-
+name: Deploy Rendering Service to Cloud Run
 on:
   push:
     branches:
       - main
     paths:
-      - 'apps/user-service/**'
-      - 'libs/**'
+      - 'apps/rendering-service/**'
 
 env:
-  GCP_REGION: us-central1 
+  GCP_REGION: us-central1
   ARTIFACT_REPO: luminth-services
-  SERVICE_NAME: user-service
-  CLOUD_RUN_SERVICE: user-service-api
+  SERVICE_NAME: rendering-service 
 
 jobs:
   build-and-deploy:
-    name: Build and Deploy Cloud Run Service
+    name: Build and Deploy to Cloud Run Service
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
@@ -43,26 +40,32 @@ jobs:
         id: build
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: apps/rendering-service
           file: ./apps/${{ env.SERVICE_NAME }}/Dockerfile
           push: true
           tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Deploy to Cloud Run
+      - name: Deploy to Cloud Run Service
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: ${{ env.CLOUD_RUN_SERVICE }}
+          service: ${{ env.SERVICE_NAME }}
           region: ${{ env.GCP_REGION }}
           image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}@${{ steps.build.outputs.digest }}
-          flags: --service-account user-service-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+
+          timeout: 900s 
+          flags: >-
+            --concurrency=1
+            --execution-environment=gen2
+            --sandbox=gvisor
+            --cpu=2
+            --memory=4Gi
+            --vpc-egress=all-traffic
+
           env_vars: |
-            GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
-            RENDER_TOPIC_ID=manim-render-requests
-            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
-            DB_URL=${{ secrets.DB_URL }}
-            REDIS_RL_URL=${{ secrets.REDIS_RL_URL }}
-            INTERNAL_API_SECRET=${{ secrets.INTERNAL_API_SECRET }}
+            DROPBOX_APP_KEY=${{ secrets.DROPBOX_APP_KEY }}
+            DROPBOX_APP_SECRET=${{ secrets.DROPBOX_APP_SECRET }}
+            DROPBOX_REFRESH_TOKEN=${{ secrets.DROPBOX_REFRESH_TOKEN }}
+            VALKEY_URI=${{ secrets.VALKEY_URI }}
