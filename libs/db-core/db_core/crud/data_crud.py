@@ -1,8 +1,6 @@
 from uuid import UUID
-
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
-
 from ..models import Canvas, Prompt
 from ..schemas import CanvasCreate, CanvasUpdate, PromptCreate, PromptUpdate
 

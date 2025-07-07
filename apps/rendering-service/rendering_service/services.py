@@ -4,12 +4,10 @@ import os
 import re
 import subprocess
 import uuid
-
 import dropbox
 import redis
 from dropbox.exceptions import ApiError
 from dropbox.files import WriteMode
-
 from rendering_service.core.config import settings
 
 dbx = None
@@ -18,7 +16,6 @@ dbx = None
 async def initialize_services():
     global dbx, redis_client
     from fastapi.concurrency import run_in_threadpool
-
     if all(
         [
             settings.DROPBOX_APP_KEY,
@@ -38,7 +35,9 @@ async def initialize_services():
             logging.error(f"Failed to connect to Dropbox on startup: {e}")
             dbx = None
     else:
-        logging.warning("Dropbox credentials not fully configured.")
+        logging.warning(
+            "Dropbox credentials not fully configured."
+        )
 
     redis_client = None
     try:

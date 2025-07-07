@@ -1,6 +1,5 @@
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
-
 from ..models import User
 from ..schemas import UserUpdate
 
@@ -34,6 +33,6 @@ async def update_user(
 
 
 async def delete_user(session: AsyncSession, user_id: str) -> None:
-    user = await get_user(session,user_id)
+    user = await get_user(session, user_id)
     if user:
         session.delete(user)
