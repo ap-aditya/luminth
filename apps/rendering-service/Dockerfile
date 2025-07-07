@@ -38,4 +38,3 @@ WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/rendering_service/ /app/rendering_service/
 CMD ["gunicorn", "-w", "1", "--threads", "6", "--timeout", "0", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8080", "rendering_service.main:app"]
-# uvicorn rendering_service.main:app --host 0.0.0.0 --port 8080 --reload
