@@ -25,9 +25,12 @@ services:
     env_file:
       - apps/user-service/.env
     ports:
-      - "8000:8000"
+      - "8000:8080"
     environment:
       - emulator_host=pubsub-emulator:8085
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/googlecredentials.json
+    volumes:
+      - ./googlecredentials.json:/app/credentials/googlecredentials.json:ro
     depends_on:
       - pubsub-emulator
       - redis-rl
@@ -40,7 +43,11 @@ services:
     env_file:
       - apps/websocket-service/.env
     ports:
-      - "8086:8086"
+      - "8086:8080"
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/googlecredentials.json
+    volumes:
+      - ./googlecredentials.json:/app/credentials/googlecredentials.json:ro
     depends_on:
       - redis
 
@@ -55,4 +62,3 @@ services:
     container_name: luminth-redis-rl
     ports:
         - "6380:6379"
-
