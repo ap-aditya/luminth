@@ -5,7 +5,7 @@ import shutil
 from contextlib import asynccontextmanager
 from typing import Any
 
-from dropbox.exceptions import ApiError
+from dropbox.exceptions import InternalServerError, RateLimitError
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
@@ -65,7 +65,9 @@ def process_message(message: PubSubMessage) -> bool:
     try:
         scene_name = services.extract_first_scene_name(code_to_render)
         video_file_path = services.render_video(code_to_render, scene_name)
-        dropbox_link = services.upload_and_get_link(video_file_path, source_id, job_id, scene_name)
+        dropbox_link = services.upload_and_get_link(
+            video_file_path, source_id, job_id, scene_name
+        )
         final_status = "success"
         redis_payload = {
             "job_id": job_id,
@@ -77,7 +79,7 @@ def process_message(message: PubSubMessage) -> bool:
             "request_timestamp": attributes.get("request_timestamp"),
         }
         return True
-    except ApiError as e:
+    except (InternalServerError, RateLimitError) as e:
         logging.warning(f"Job '{job_id}' failed with a retryable Dropbox error: {e}")
         return False
 
