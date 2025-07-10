@@ -6,6 +6,8 @@ out-tsc
 **/.venv
 **/__pycache__/
 **/*.pyc
+**/googlecredentials.json
+**/generate-test-message.sh
 # dependencies
 node_modules
 
