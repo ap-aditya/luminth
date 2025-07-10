@@ -1,24 +1,14 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { cookies, headers } from 'next/headers';
-import admin from 'firebase-admin';
-import { applyRateLimit } from '@/lib/rate-limiter';
+import { authenticatedAction } from '@/lib/safe-action';
 
 export async function updateCanvas(
   canvasId: string,
   title: string,
   code: string,
 ) {
-  try {
-    await applyRateLimit();
-
-    const sessionCookie = (await cookies()).get('session')?.value;
-    if (!sessionCookie) throw new Error('Authentication required');
-
-    await admin.auth().verifySessionCookie(sessionCookie, true);
-    const ip = (await headers()).get('x-forwarded-for') ?? '127.0.0.1';
-
+  return authenticatedAction(async ({ sessionCookie, ip }) => {
     const response = await fetch(
       `${process.env.FASTAPI_BASE_URL}/api/v1/canvases/${canvasId}`,
       {
@@ -39,22 +29,12 @@ export async function updateCanvas(
     }
 
     revalidatePath(`/canvases/${canvasId}`);
-    return { success: true, message: 'Saved' };
-  } catch (error: any) {
-    return { success: false, error: error.message };
-  }
+    return { message: 'Saved' };
+  });
 }
 
 export async function renderCanvas(canvasId: string) {
-  try {
-    await applyRateLimit();
-
-    const sessionCookie = (await cookies()).get('session')?.value;
-    if (!sessionCookie) throw new Error('Authentication required');
-
-    await admin.auth().verifySessionCookie(sessionCookie, true);
-    const ip = (await headers()).get('x-forwarded-for') ?? '127.0.0.1';
-
+  return authenticatedAction(async ({ sessionCookie, ip }) => {
     const response = await fetch(
       `${process.env.FASTAPI_BASE_URL}/api/v1/canvases/render/${canvasId}`,
       {
@@ -72,9 +52,8 @@ export async function renderCanvas(canvasId: string) {
       const errorData = await response.json();
       throw new Error(errorData.detail || 'Failed to submit render job.');
     }
+
     const result = await response.json();
-    return { success: true, message: result.message };
-  } catch (error: any) {
-    return { success: false, error: error.message };
-  }
+    return { message: result.message };
+  });
 }

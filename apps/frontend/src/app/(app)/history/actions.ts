@@ -1,21 +1,10 @@
 'use server';
 
-import { cookies, headers } from 'next/headers';
-import admin from 'firebase-admin';
-import { applyRateLimit } from '@/lib/rate-limiter';
 import { revalidatePath } from 'next/cache';
+import { authenticatedAction } from '@/lib/safe-action';
 
 export async function getHistory(page: number = 1, size: number = 20) {
-  try {
-    await applyRateLimit();
-
-    const sessionCookie = (await cookies()).get('session')?.value;
-    if (!sessionCookie) {
-      throw new Error('Authentication required.');
-    }
-
-    await admin.auth().verifySessionCookie(sessionCookie, true);
-    const ip = (await headers()).get('x-forwarded-for') ?? '127.0.0.1';
+  return authenticatedAction(async ({ sessionCookie, ip }) => {
     const url = new URL(`${process.env.FASTAPI_BASE_URL}/api/v1/history`);
     url.searchParams.append('page', page.toString());
     url.searchParams.append('size', size.toString());
@@ -37,27 +26,15 @@ export async function getHistory(page: number = 1, size: number = 20) {
     }
 
     const data = await response.json();
-    return { success: true, data };
-  } catch (error: any) {
-    return { success: false, error: error.message };
-  }
+    return data;
+  });
 }
 
 export async function deleteHistoryItem(
   itemType: 'canvas' | 'prompt',
   itemId: string,
 ) {
-  try {
-    await applyRateLimit();
-
-    const sessionCookie = (await cookies()).get('session')?.value;
-    if (!sessionCookie) {
-      throw new Error('Authentication required.');
-    }
-
-    await admin.auth().verifySessionCookie(sessionCookie, true);
-    const ip = (await headers()).get('x-forwarded-for') ?? '127.0.0.1';
-
+  return authenticatedAction(async ({ sessionCookie, ip }) => {
     const response = await fetch(
       itemType == 'canvas'
         ? `${process.env.FASTAPI_BASE_URL}/api/v1/canvases/${itemId}`
@@ -78,8 +55,6 @@ export async function deleteHistoryItem(
     }
 
     revalidatePath('/history');
-    return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message };
-  }
+    return { message: 'Item deleted successfully.' };
+  });
 }

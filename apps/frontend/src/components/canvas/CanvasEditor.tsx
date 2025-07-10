@@ -40,7 +40,7 @@ const LimitReachedMessage = () => {
   });
 
   return (
-    <div className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400">
+    <div className="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400 mt-1">
       <Timer className="h-3 w-3" />
       <span>Render limit reached. Resets at {formattedTime}.</span>
     </div>
@@ -137,7 +137,7 @@ export default function CanvasEditor({ initialData }: CanvasEditorProps) {
       if (result.success) {
         setRenderMessage({
           type: 'success',
-          text: result.message || 'Render job submitted!',
+          text: result.data?.message || 'Render job submitted!',
         });
         incrementRenderCount();
       } else {
