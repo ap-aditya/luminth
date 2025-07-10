@@ -30,10 +30,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'yarn'
+          cache: 'npm'
 
 
-      - run: yarn install --frozen-lockfile
+      - run: npm ci
 
       - name: Set up Python
         uses: actions/setup-python@v5
