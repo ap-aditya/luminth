@@ -41,7 +41,7 @@ async function getPromptData(promptId: string): Promise<PromptResponse | null> {
 export default async function PromptPage({
   params,
 }: {
-  params: { prompt_id: string };
+  params: Promise<{ prompt_id: string }>;
 }) {
   const { prompt_id } = await params;
   const initialData = await getPromptData(prompt_id);

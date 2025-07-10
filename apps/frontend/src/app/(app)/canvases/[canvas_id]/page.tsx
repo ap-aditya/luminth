@@ -40,7 +40,7 @@ async function getCanvasData(canvasId: string): Promise<CanvasResponse | null> {
 export default async function CanvasPage({
   params,
 }: {
-  params: { canvas_id: string };
+  params: Promise<{ canvas_id: string }>;
 }) {
   const { canvas_id } = await params;
   const initialData = await getCanvasData(canvas_id);
