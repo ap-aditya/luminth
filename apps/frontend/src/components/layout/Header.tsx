@@ -7,6 +7,7 @@ import { User } from '@/types';
 import { useAuth } from '@/hooks/useFirebaseAuth';
 import { generateAvatarSvg } from '@/lib/avatar';
 import { LogOut, User as UserIcon, PanelLeft, Loader2 } from 'lucide-react';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 interface HeaderProps {
   userProfile: User | null;
@@ -71,61 +72,65 @@ export default function Header({ userProfile, onToggleSidebar }: HeaderProps) {
 
       <div className="flex-1"></div>
 
-      <div className="relative" ref={menuRef}>
-        <button
-          onClick={() => setMenuOpen(!isMenuOpen)}
-          className="relative flex items-center justify-center h-10 w-10 rounded-full bg-gray-200 dark:bg-slate-700 border-2 border-transparent hover:border-cyan-500 transition-colors"
-        >
-          {avatarSvg ? (
-            <img
-              src={avatarSvg}
-              alt={userProfile?.name || 'User Avatar'}
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-          ) : (
-            <div className="w-full h-full rounded-full bg-gray-300 dark:bg-slate-600 animate-pulse" />
-          )}
-        </button>
+      <div className="flex items-center gap-4">
+        <NotificationBell />
 
-        <div
-          className={`absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden transition-all duration-200 ease-in-out z-10 ${
-            isMenuOpen
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-2 pointer-events-none'
-          }`}
-        >
-          <div className="p-2 border-b border-gray-200 dark:border-slate-700">
-            <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">
-              {userProfile?.name || 'User'}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              {userProfile?.user_id}
-            </p>
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(!isMenuOpen)}
+            className="relative flex items-center justify-center h-10 w-10 rounded-full bg-gray-200 dark:bg-slate-700 border-2 border-transparent hover:border-cyan-500 transition-colors"
+          >
+            {avatarSvg ? (
+              <img
+                src={avatarSvg}
+                alt={userProfile?.name || 'User Avatar'}
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+            ) : (
+              <div className="w-full h-full rounded-full bg-gray-300 dark:bg-slate-600 animate-pulse" />
+            )}
+          </button>
+
+          <div
+            className={`absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden transition-all duration-200 ease-in-out z-10 ${
+              isMenuOpen
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-2 pointer-events-none'
+            }`}
+          >
+            <div className="p-2 border-b border-gray-200 dark:border-slate-700">
+              <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">
+                {userProfile?.name || 'User'}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                {userProfile?.user_id}
+              </p>
+            </div>
+            <nav className="p-2">
+              <Link
+                href="/settings/profile"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md"
+              >
+                <UserIcon className="h-4 w-4" />
+                <span>Profile</span>
+              </Link>
+              <button
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md mt-1 disabled:opacity-50"
+              >
+                {isSigningOut ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <LogOut className="h-4 w-4" />
+                )}
+                <span>{isSigningOut ? 'Signing Out...' : 'Sign Out'}</span>
+              </button>
+            </nav>
           </div>
-          <nav className="p-2">
-            <Link
-              href="/settings/profile"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md"
-            >
-              <UserIcon className="h-4 w-4" />
-              <span>Profile</span>
-            </Link>
-            <button
-              onClick={handleSignOut}
-              disabled={isSigningOut}
-              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md mt-1 disabled:opacity-50"
-            >
-              {isSigningOut ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <LogOut className="h-4 w-4" />
-              )}
-              <span>{isSigningOut ? 'Signing Out...' : 'Sign Out'}</span>
-            </button>
-          </nav>
         </div>
       </div>
     </header>
