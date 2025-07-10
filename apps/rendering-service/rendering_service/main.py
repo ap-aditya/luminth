@@ -48,6 +48,7 @@ def process_message(message: PubSubMessage) -> bool:
         code_to_render = base64.b64decode(message.data).decode("utf-8").strip()
         job_id = attributes.get("job_id")
         user_id = attributes.get("user_id")
+        source_id = attributes.get("source_id")
         if not all([job_id, user_id, code_to_render]):
             raise ValueError(
                 "'job_id', 'user_id', and code data must be provided in attributes."
@@ -64,14 +65,14 @@ def process_message(message: PubSubMessage) -> bool:
     try:
         scene_name = services.extract_first_scene_name(code_to_render)
         video_file_path = services.render_video(code_to_render, scene_name)
-        dropbox_link = services.upload_and_get_link(video_file_path, job_id, scene_name)
+        dropbox_link = services.upload_and_get_link(video_file_path, source_id, job_id, scene_name)
         final_status = "success"
         redis_payload = {
             "job_id": job_id,
             "user_id": user_id,
             "status": final_status,
             "video_url": dropbox_link,
-            "source_id": attributes.get("source_id"),
+            "source_id": source_id,
             "source_type": attributes.get("source_type"),
             "request_timestamp": attributes.get("request_timestamp"),
         }
@@ -89,7 +90,7 @@ def process_message(message: PubSubMessage) -> bool:
             "user_id": user_id,
             "status": "failure",
             "error": str(e),
-            "source_id": attributes.get("source_id"),
+            "source_id": source_id,
             "source_type": attributes.get("source_type"),
             "request_timestamp": attributes.get("request_timestamp"),
         }
