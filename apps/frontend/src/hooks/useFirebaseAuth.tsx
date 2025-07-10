@@ -19,6 +19,7 @@ import {
   verifyPasswordResetCode,
   confirmPasswordReset,
   reload,
+  getAuth,
   User,
   Auth,
 } from 'firebase/auth';
@@ -94,6 +95,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+const setSessionCookie = async (user: User) => {
+  try {
+    const idToken = await user.getIdToken(true);
+    const response = await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken }),
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('Failed to set session cookie:', error);
+    return false;
+  }
+};
+
+const clearSessionCookie = async () => {
+  try {
+    await fetch('/api/auth/session/clear', { method: 'POST' });
+  } catch (error) {
+    console.error('Failed to clear session cookie:', error);
+  }
+};
+
 export const useAuth = () => useContext(AuthContext);
 
 function useProvideFirebaseAuth(firebaseAuth: Auth): AuthContextType {
@@ -120,13 +144,10 @@ function useProvideFirebaseAuth(firebaseAuth: Auth): AuthContextType {
         await signOut(firebaseAuth);
         return { success: true };
       } catch (error) {
-        console.error('Error signing up:', error);
-        if (error instanceof FirebaseError) {
-          return { success: false, error };
-        }
+        if (error instanceof FirebaseError) return { success: false, error };
         return {
           success: false,
-          error: new Error('An unexpected error occurred during sign up.'),
+          error: new Error('An unexpected error occurred.'),
         };
       }
     },
@@ -142,24 +163,28 @@ function useProvideFirebaseAuth(firebaseAuth: Auth): AuthContextType {
           password,
         );
         await reload(userCredential.user);
+        const freshUser = firebaseAuth.currentUser;
 
-        if (userCredential.user?.emailVerified) {
-          return { success: true };
-        } else {
+        if (!freshUser?.emailVerified) {
           await signOut(firebaseAuth);
           return {
             success: false,
             error: new Error('Please verify your email before logging in.'),
           };
         }
-      } catch (error) {
-        console.error('Error signing in:', error);
-        if (error instanceof FirebaseError) {
-          return { success: false, error };
+
+        const sessionSet = await setSessionCookie(freshUser);
+        if (!sessionSet) {
+          throw new Error('Could not create a server session.');
         }
+
+        setUser(freshUser);
+        return { success: true };
+      } catch (error) {
+        if (error instanceof FirebaseError) return { success: false, error };
         return {
           success: false,
-          error: new Error('An unexpected error occurred during sign in.'),
+          error: new Error('An unexpected error occurred.'),
         };
       }
     },
@@ -169,15 +194,15 @@ function useProvideFirebaseAuth(firebaseAuth: Auth): AuthContextType {
   const signUserOut = useCallback(async () => {
     try {
       await signOut(firebaseAuth);
+      await clearSessionCookie();
+
+      setUser(null);
       return { success: true };
     } catch (error) {
-      console.error('Error signing out:', error);
-      if (error instanceof FirebaseError) {
-        return { success: false, error };
-      }
+      if (error instanceof FirebaseError) return { success: false, error };
       return {
         success: false,
-        error: new Error('An unexpected error occurred during sign out.'),
+        error: new Error('An unexpected error occurred.'),
       };
     }
   }, [firebaseAuth]);
@@ -188,10 +213,7 @@ function useProvideFirebaseAuth(firebaseAuth: Auth): AuthContextType {
         await sendPasswordResetEmail(firebaseAuth, email);
         return { success: true };
       } catch (error) {
-        console.error('Error sending password reset email:', error);
-        if (error instanceof FirebaseError) {
-          return { success: false, error };
-        }
+        if (error instanceof FirebaseError) return { success: false, error };
         return {
           success: false,
           error: new Error('An unexpected error occurred.'),
@@ -205,16 +227,12 @@ function useProvideFirebaseAuth(firebaseAuth: Auth): AuthContextType {
     async (actionCode: string) => {
       try {
         await applyActionCode(firebaseAuth, actionCode);
-
         if (firebaseAuth.currentUser) {
           await reload(firebaseAuth.currentUser);
         }
         return { success: true };
       } catch (error) {
-        console.error('Error confirming email verification:', error);
-        if (error instanceof FirebaseError) {
-          return { success: false, error };
-        }
+        if (error instanceof FirebaseError) return { success: false, error };
         return {
           success: false,
           error: new Error('An unexpected error occurred.'),
@@ -230,7 +248,6 @@ function useProvideFirebaseAuth(firebaseAuth: Auth): AuthContextType {
         const email = await verifyPasswordResetCode(firebaseAuth, actionCode);
         return { success: true, email };
       } catch (error) {
-        console.error('Error verifying password reset code:', error);
         return { success: false, error: error as AuthError };
       }
     },
@@ -243,7 +260,6 @@ function useProvideFirebaseAuth(firebaseAuth: Auth): AuthContextType {
         await confirmPasswordReset(firebaseAuth, actionCode, newPassword);
         return { success: true };
       } catch (error) {
-        console.error('Error confirming password reset:', error);
         return { success: false, error: error as AuthError };
       }
     },
