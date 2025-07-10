@@ -15,7 +15,7 @@ class User(SQLModel, table=True):
     user_id: str = Field(primary_key=True)
     name: str | None
     dob: datetime.date | None = None
-    avatar: str | None = None
+    avatar: str = Field(default="Aditya")
     prompt_daily_limit: int = Field(default=10, nullable=False)
     render_daily_limit: int = Field(default=30, nullable=False)
     prompt_requests_today: int = Field(default=0, nullable=False)

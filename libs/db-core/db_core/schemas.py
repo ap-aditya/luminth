@@ -5,7 +5,7 @@ from sqlmodel import Field, SQLModel
 
 class UserUpdate(SQLModel):
     name: str | None = None
-    dob: str | None = None
+    dob: datetime.date | None = None
     avatar: str | None = None
 
 
