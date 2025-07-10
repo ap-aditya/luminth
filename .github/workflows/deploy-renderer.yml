@@ -56,7 +56,7 @@ jobs:
           region: ${{ env.GCP_REGION }}
           image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}@${{ steps.build.outputs.digest }}
 
-          timeout: 900s
+          timeout: 590s
           flags: '--concurrency=1 --execution-environment=gen2 --cpu=2 --memory=4Gi'
 
           env_vars: |
