@@ -2,7 +2,7 @@ import json
 import logging
 
 import firebase_admin
-from fastapi import HTTPException, Security, status
+from fastapi import HTTPException, Security, status, WebSocket
 from fastapi.concurrency import run_in_threadpool
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from firebase_admin import auth, credentials
@@ -12,19 +12,10 @@ from ..dependencies.config import settings
 
 async def initialize_firebase():
     try:
-        service_account_info_str = settings.FIREBASE_SERVICE_ACCOUNT_KEY
-        if service_account_info_str:
-            service_account_info = json.loads(service_account_info_str)
-            cred = credentials.Certificate(service_account_info)
-            await run_in_threadpool(firebase_admin.initialize_app, cred)
-            logging.info(
-                "Firebase Admin SDK initialized successfully via environment variable."
-            )
-        else:
-            await run_in_threadpool(firebase_admin.initialize_app)
-            logging.info(
-                "Firebase Admin SDK initialized successfully via default credentials."
-            )
+        await run_in_threadpool(firebase_admin.initialize_app)
+        logging.info(
+            "Firebase Admin SDK initialized successfully via default credentials."
+        )
     except Exception as e:
         logging.critical(
             f"CRITICAL ERROR: Could not initialize Firebase Admin SDK: {e}"
@@ -52,3 +43,29 @@ async def get_current_user(
             detail=f"Authentication failed: {e}",
             headers={"WWW-Authenticate": "Bearer"},
         ) from e
+
+
+async def get_current_user_ws(
+    websocket: WebSocket,
+):
+    try:
+        session_cookie = websocket.cookies.get("session")
+
+        if not session_cookie:
+            logging.warning("WebSocket connection attempt without a session cookie.")
+            await websocket.close(code=4001, reason="Session cookie not found")
+            return None
+
+        decoded_token = await run_in_threadpool(
+            auth.verify_session_cookie, session_cookie, check_revoked=True
+        )
+        return decoded_token
+
+    except firebase_admin.auth.InvalidSessionCookieError as e:
+        logging.warning(f"Invalid or expired Firebase session cookie: {e}")
+        await websocket.close(code=4003, reason="Invalid or expired session")
+        return None
+    except Exception as e:
+        logging.error(f"WebSocket authentication failed: {e}")
+        await websocket.close(code=4000, reason="Authentication failed")
+        return None

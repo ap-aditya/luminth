@@ -8,7 +8,6 @@ class Settings(BaseSettings):
     REDIS_HOST: str | None = None
     REDIS_PORT: int | None = None
     REDIS_CHANNEL: str = "video_links"
-    FIREBASE_SERVICE_ACCOUNT_KEY: str | None = None
     DB_URL: str | None = None
 
     class Config:

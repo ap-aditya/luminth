@@ -4,12 +4,15 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from db_core.database import get_session
+from db_core.database import get_session_context
 from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect
 
 from .dependencies.config import settings
 from .dependencies.message_processing import process_payload
-from .dependencies.security import get_current_user, initialize_firebase
+from .dependencies.security import (
+    initialize_firebase,
+    get_current_user_ws,
+)
 from .redis_client import RedisClient
 from .websocket_manager import ConnectionManager
 
@@ -27,7 +30,7 @@ async def redis_message_processor():
             try:
                 payload_data = json.loads(payload_str)
                 user_id = payload_data.get("user_id")
-                async with get_session() as session:
+                async with get_session_context() as session:
                     user_message = await process_payload(payload_data, session=session)
 
                 if user_message and user_id:
@@ -74,8 +77,10 @@ app = FastAPI(
 @app.websocket("/ws/progress")
 async def websocket_endpoint(
     websocket: WebSocket,
-    user: Annotated[dict, Depends(get_current_user)],
+    user: Annotated[dict, Depends(get_current_user_ws)],
 ):
+    if user is None:
+        return
     user_id = user.get("uid")
     await connection_manager.connect(websocket, user_id)
     logging.info(

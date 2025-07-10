@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 from collections import defaultdict
-
+from .models import UserMessage
 from fastapi import WebSocket
 from starlette.websockets import WebSocketState
 
@@ -26,13 +26,12 @@ class ConnectionManager:
             if not connections:
                 del self.active_connections[user_id]
 
-    async def send_personal_message(self, message: dict, user_id: str):
+    async def send_personal_message(self, message: UserMessage, user_id: str):
         connections = self.active_connections.get(user_id, [])
         if not connections:
             return
 
-        message_json = json.dumps(message)
-
+        message_json = message.model_dump_json()
         tasks = []
         stale_connections = []
         for connection in connections:
@@ -52,7 +51,7 @@ class ConnectionManager:
 
         if stale_connections:
             logging.debug(
-                f"Removing {len(stale_connections)} stale connection(s) for user {user_id}." # noqa: E501
+                f"Removing {len(stale_connections)} stale connection(s) for user {user_id}."  # noqa: E501
             )
             for conn in set(stale_connections):
                 self.disconnect(conn, user_id)
