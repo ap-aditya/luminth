@@ -1,0 +1,9 @@
+services:
+  rendering-service:
+    command: ["uvicorn", "rendering_service.main:app", "--host", "0.0.0.0", "--port", "8080"]
+
+  user-service:
+    command: ["uvicorn", "user_service.main:app", "--host", "0.0.0.0", "--port", "8080"]
+
+  websocket-service:
+    command: ["uvicorn", "websocket_service.main:app", "--host", "0.0.0.0", "--port", "8080"]
