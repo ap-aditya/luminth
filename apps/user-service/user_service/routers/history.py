@@ -8,19 +8,9 @@ from sqlalchemy import func, literal_column, select, union_all
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependencies.security import get_current_user
-from ..models import HistoryItem, HistoryItemType
+from ..models import HistoryItem, HistoryItemType, PaginatedHistoryResponse
 
-router = APIRouter(
-    prefix="/history", tags=["History"], dependencies=[Depends(get_current_user)]
-)
-
-
-class PaginatedHistoryResponse(BaseModel):
-    total_items: int
-    items: list[HistoryItem]
-    page: int
-    size: int
-    total_pages: int
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 def common_pagination_params(

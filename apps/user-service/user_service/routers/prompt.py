@@ -3,7 +3,7 @@ import logging
 import uuid
 from enum import Enum
 from typing import Annotated
-
+import asyncio
 from db_core.crud import data_crud, user_crud
 from db_core.database import get_session
 from db_core.models import Prompt, User
@@ -69,13 +69,17 @@ async def check_and_increment_limit(
 async def submit_job(prompt: Prompt):
     try:
         request_time = datetime.datetime.now(datetime.UTC)
-        job_id = await publish_job.submit_render_job(
-            source_id=str(prompt.prompt_id),
-            code=prompt.code,
-            source_type="prompt",
-            user_id=str(prompt.author_id),
-            request_time=request_time,
+        loop = asyncio.get_event_loop()
+        job_id = await loop.run_in_executor(
+            None,
+            publish_job.submit_render_job,
+            str(prompt.prompt_id),
+            prompt.code,
+            "prompt",
+            str(prompt.author_id),
+            request_time,
         )
+
         prompt.latest_render_at = request_time
         return {"job_id": job_id}
     except Exception as e:
@@ -223,6 +227,6 @@ async def delete_prompt(
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
     logging.info(f"User {prompt.author_id} deleting prompt {prompt.prompt_id}.")
-    await data_crud.delete_prompt(session=session, prompt=prompt)
+    await data_crud.delete_prompt(session=session, prompt_id=prompt.prompt_id)
     await session.commit()
     return None

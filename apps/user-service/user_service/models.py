@@ -16,6 +16,7 @@ class CanvasResponse(BaseModel):
     code: str | None = None
     video_url: str | None = None
     updated_at: datetime.datetime
+    latest_render_at: datetime.datetime | None = None
 
     class Config:
         from_attributes = True
@@ -30,6 +31,8 @@ class PromptResponse(BaseModel):
     code: str | None = None
     video_url: str | None = None
     updated_at: datetime.datetime
+    prompt_text: str
+    latest_render_at: datetime.datetime | None = None
 
     class Config:
         from_attributes = True
@@ -49,3 +52,26 @@ class HistoryItem(BaseModel):
     item_id: uuid.UUID
     display_text: str
     updated_at: datetime.datetime
+
+
+class UserResponse(BaseModel):
+    user_id: str
+    name: str | None
+    dob: datetime.date | None = None
+    avatar: str
+    prompt_daily_limit: int
+    render_daily_limit: int
+    prompt_requests_today: int
+    render_requests_today: int
+    last_request_date: datetime.date | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class PaginatedHistoryResponse(BaseModel):
+    total_items: int
+    items: list[HistoryItem]
+    page: int
+    size: int
+    total_pages: int

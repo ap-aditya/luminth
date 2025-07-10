@@ -9,13 +9,13 @@ from db_core.models import User
 from db_core.schemas import UserUpdate
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from ..models import UserResponse
 from ..dependencies.security import get_current_user
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
-@router.get("/me", response_model=User, summary="Get Current User's Profile")
+@router.get("/me", response_model=UserResponse, summary="Get Current User's Profile")
 async def get_current_user_profile(
     user: Annotated[dict, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
@@ -34,7 +34,7 @@ async def get_current_user_profile(
     return db_user
 
 
-@router.put("/me", response_model=User, summary="Update Current User's Profile")
+@router.put("/me", response_model=UserResponse, summary="Update Current User's Profile")
 async def update_current_user_profile(
     user_update: UserUpdate,
     user: Annotated[dict, Depends(get_current_user)],
@@ -50,7 +50,7 @@ async def update_current_user_profile(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found to update."
         )
 
-    if "dob" in user_update and user_update.dob is not None:
+    if user_update.dob is not None:
         try:
             if isinstance(user_update.dob, str):
                 parsed_date = datetime.date.fromisoformat(user_update.dob)
@@ -82,7 +82,7 @@ async def update_current_user_profile(
                     ),
                 )
 
-            user_update["dob"] = parsed_date
+            user_update.dob = parsed_date
         except (ValueError, TypeError):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -90,7 +90,7 @@ async def update_current_user_profile(
             ) from None
 
     updated_user = await user_crud.update_user(
-        session=session, user=db_user, user_update=user_update
+        session=session, user=db_user, user_in=user_update
     )
 
     await session.commit()

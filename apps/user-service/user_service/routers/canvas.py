@@ -2,7 +2,7 @@ import datetime
 import logging
 import uuid
 from typing import Annotated
-
+import asyncio
 from db_core.crud import data_crud, user_crud
 from db_core.database import get_session
 from db_core.models import Canvas, User
@@ -52,13 +52,18 @@ async def check_and_increment_render_limit(session: AsyncSession, user: User) ->
 async def submit_job(canvas: Canvas):
     try:
         request_time = datetime.datetime.now(datetime.UTC)
-        job_id = await publish_job.submit_render_job(
-            source_id=str(canvas.canvas_id),
-            code=canvas.code,
-            source_type="canvas",
-            user_id=str(canvas.author_id),
-            request_time=request_time,
+
+        loop = asyncio.get_event_loop()
+        job_id = await loop.run_in_executor(
+            None,
+            publish_job.submit_render_job,
+            str(canvas.canvas_id),
+            canvas.code,
+            "canvas",
+            str(canvas.author_id),
+            request_time,
         )
+
         canvas.latest_render_at = request_time
         return {"job_id": job_id}
     except Exception as e:
@@ -78,12 +83,14 @@ async def submit_job(canvas: Canvas):
     response_model=CanvasResponse,
 )
 async def create_new_canvas(
-    canvas_in: CanvasCreate,
     user: Annotated[dict, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
+    canvas_in: CanvasCreate | None = None,
 ):
     uid = user.get("uid")
     logging.info(f"User {uid} creating new canvas.")
+    if canvas_in is None:
+        canvas_in = CanvasCreate()
     new_canvas = await data_crud.create_canvas(
         session=session, user_id=uid, canvas_in=canvas_in
     )
@@ -156,7 +163,7 @@ async def update_canvas(
     updated_canvas = CanvasUpdate(**canvas_in.model_dump(exclude_unset=True))
 
     await data_crud.update_canvas(
-        session=session, canvas=canvas, canvas_in=updated_canvas
+        session=session, db_canvas=canvas, canvas_in=updated_canvas
     )
     await session.commit()
     await session.refresh(canvas)
@@ -173,6 +180,6 @@ async def delete_canvas(
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
     logging.info(f"User {canvas.author_id} deleting canvas {canvas.canvas_id}.")
-    await data_crud.delete_canvas(session=session, canvas=canvas)
+    await data_crud.delete_canvas(session=session, canvas_id=canvas.canvas_id)
     await session.commit()
     return None

@@ -17,7 +17,7 @@ async def initialize_publisher():
     try:
         if settings.emulator_host:
             logging.info(f"Connecting to Pub/Sub emulator at {settings.emulator_host}")
-            publisher = pubsub_v1.PublisherClient( 
+            publisher = pubsub_v1.PublisherClient(
                 credentials=AnonymousCredentials(),
                 client_options=ClientOptions(api_endpoint=settings.emulator_host),
             )
@@ -34,7 +34,7 @@ async def initialize_publisher():
         publisher = None
 
 
-async def submit_render_job(
+def submit_render_job(
     source_id: str,
     code: str,
     source_type: str,
@@ -46,20 +46,21 @@ async def submit_render_job(
 
     job_id = str(uuid.uuid4())
     logging.info(f"Submitting render job {job_id} for user {user_id}")
-
+    attributes = {
+        "user_id": str(user_id),
+        "job_id": str(job_id),
+        "source_id": str(source_id),
+        "source_type": str(source_type),
+        "request_timestamp": str(request_time.isoformat()),
+    }
+    logging.info(f"Preparing to publish attributes: {attributes}")
     try:
         future = publisher.publish(
             topic_path,
             data=code.encode("utf-8"),
-            attributes={
-                "user_id": user_id,
-                "job_id": job_id,
-                "source_id": source_id,
-                "source_type": source_type,
-                "request_timestamp": request_time.isoformat(),
-            },
+            attributes=attributes,
         )
-        message_id = await future
+        message_id = future.result()
         logging.info(f"Successfully published message {message_id} for job {job_id}.")
         return job_id
     except Exception as e:

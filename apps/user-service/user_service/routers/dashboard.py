@@ -8,16 +8,17 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependencies.security import get_current_user
-from ..models import HistoryItem, HistoryItemType
+from ..models import HistoryItem, HistoryItemType, UserResponse
 
-router = APIRouter(
-    prefix="/dashboard", tags=["Dashboard"], dependencies=[Depends(get_current_user)]
-)
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 class DashboardData(BaseModel):
-    user_profile: User
+    user_profile: UserResponse
     recent_activity: list[HistoryItem]
+
+    class Config:
+        from_attributes = True
 
 
 async def _get_unified_history(
