@@ -168,7 +168,7 @@ export default function SignUpForm() {
       }
     },
     [formData, signUpWithEmail, router],
-  ); // Dependencies for useCallback
+  );
 
   if (loading) {
     return (

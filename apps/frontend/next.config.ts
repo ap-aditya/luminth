@@ -1,9 +1,24 @@
 import { composePlugins, withNx } from '@nx/next';
 import type { WithNxOptions } from '@nx/next/plugins/with-nx';
 
+/**
+ * @type {WithNxOptions}
+ **/
 const nextConfig: WithNxOptions = {
   nx: {
+    // Set this to true if you would like to use SVGR
+    // See: https://github.com/gregberge/svgr
     svgr: false,
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        port: '',
+        pathname: '/8.x/adventurer/svg/**',
+      },
+    ],
   },
   webpack(config) {
     // The existing rule that handles SVG imports
@@ -35,6 +50,7 @@ const nextConfig: WithNxOptions = {
 };
 
 const plugins = [
+  // Add any Next.js plugins to this list if you have any.
   withNx,
 ];
 

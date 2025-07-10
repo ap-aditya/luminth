@@ -1,6 +1,6 @@
 'use client';
-import React, { useState, useEffect, useReducer, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useReducer, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FirebaseError } from 'firebase/app';
 import { Mail, Lock, Eye, EyeOff, AlertTriangle } from 'lucide-react';
@@ -91,17 +91,12 @@ const initialState: FormState = {
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const { signInWithEmail, user, loading } = useAuth();
+  const { signInWithEmail, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [state, dispatch] = useReducer(formReducer, initialState);
   const { formData, errors, firebaseError, isSubmitting } = state;
-
-  useEffect(() => {
-    if (!loading && user) {
-      router.replace('/dashboard');
-    }
-  }, [user, loading, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch({
@@ -133,7 +128,8 @@ export default function SignInForm() {
       );
 
       if (success) {
-        dispatch({ type: 'SUBMIT_SUCCESS' });
+        const redirectTo = searchParams.get('redirect_to') || '/dashboard';
+        router.push(redirectTo);
       } else if (authError) {
         const friendlyError = getFriendlyFirebaseError(
           (authError as FirebaseError).code || 'unknown-error',
@@ -141,14 +137,14 @@ export default function SignInForm() {
         dispatch({ type: 'SUBMIT_FAILURE', error: friendlyError });
       }
     },
-    [formData, signInWithEmail],
+    [formData, signInWithEmail, router, searchParams],
   );
 
-  if (loading || user) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center w-full min-h-[320px]">
         <p className="text-gray-800 dark:text-gray-200 animate-pulse">
-          {user ? 'Redirecting...' : 'Loading session...'}
+          Loading session...
         </p>
       </div>
     );
