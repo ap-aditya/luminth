@@ -114,11 +114,13 @@ def render_video(code: str, scene_name: str) -> str:
             os.remove(script_path)
 
 
-def upload_and_get_link(file_path: str, task_id: str, scene_name: str) -> str:
+def upload_and_get_link(
+    file_path: str, source_id: str, task_id: str, scene_name: str
+) -> str:
     if not dbx:
         raise Exception("Dropbox client is not initialized.")
 
-    file_name = f"{task_id}_{scene_name}.mp4"
+    file_name = f"{task_id}_{source_id}_{scene_name}.mp4"
     dropbox_path = f"/{file_name}"
     logging.info(f"Uploading {file_name} to Dropbox path: {dropbox_path}")
 
