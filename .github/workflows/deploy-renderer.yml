@@ -57,7 +57,7 @@ jobs:
           image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}@${{ steps.build.outputs.digest }}
 
           timeout: 590s
-          flags: '--concurrency=1 --execution-environment=gen2 --cpu=2 --memory=4Gi'
+          flags: '--concurrency=1 --execution-environment=gen2 --cpu=1 --memory=1Gi'
 
           env_vars: |
             DROPBOX_APP_KEY=${{ secrets.DROPBOX_APP_KEY }}

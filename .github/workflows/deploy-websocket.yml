@@ -54,7 +54,7 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.GCP_REGION }}
           image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}@${{ steps.build.outputs.digest }}
-          flags: '--session-affinity --cpu=1 --memory=512Mi'
+          flags: '--session-affinity --cpu=250m --memory=256Mi'
           env_vars: |
             VALKEY_URI=${{ secrets.VALKEY_URI }}
             DB_URL=${{ secrets.DB_URL }}
