@@ -17,11 +17,9 @@ async def initialize_publisher():
     try:
         if settings.emulator_host:
             logging.info(f"Connecting to Pub/Sub emulator at {settings.emulator_host}")
-            channel = grpc.insecure_channel(settings.emulator_host)
             publisher = pubsub_v1.PublisherClient(
                 credentials=AnonymousCredentials(),
                 client_options=ClientOptions(api_endpoint=settings.emulator_host),
-                channel=channel
             )
         else:
             logging.info("Connecting to production Pub/Sub")
