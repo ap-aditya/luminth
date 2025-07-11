@@ -19,6 +19,7 @@ async def initialize_firebase():
         raise
 
 async def get_current_user_ws(websocket: WebSocket):
+    await websocket.accept()
     try:
         auth_data = await websocket.receive_json()
         
