@@ -22,50 +22,25 @@ async def initialize_firebase():
         )
         raise
 
-
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Security(HTTPBearer()),  # noqa : B008
-):
-
+async def get_current_user_ws(websocket: WebSocket):
     try:
-        id_token = credentials.credentials
-        decoded_token = await run_in_threadpool(auth.verify_id_token, id_token)
-        return decoded_token
-    except firebase_admin.auth.InvalidIdTokenError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid or expired Firebase ID token: {e}",
-            headers={"WWW-Authenticate": "Bearer"},
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication failed: {e}",
-            headers={"WWW-Authenticate": "Bearer"},
-        ) from e
-
-
-async def get_current_user_ws(
-    websocket: WebSocket,
-):
-    try:
-        session_cookie = websocket.cookies.get("session")
-
-        if not session_cookie:
-            logging.warning("WebSocket connection attempt without a session cookie.")
-            await websocket.close(code=4001, reason="Session cookie not found")
+        auth_data = await websocket.receive_json()
+        
+        if auth_data.get("type") != "auth" or not auth_data.get("token"):
+            logging.warning("WebSocket connection attempt with invalid auth message format.")
+            await websocket.close(code=4001, reason="Invalid auth message")
             return None
 
-        decoded_token = await run_in_threadpool(
-            auth.verify_session_cookie, session_cookie, check_revoked=True
-        )
+        token = auth_data["token"]
+        decoded_token = await run_in_threadpool(auth.verify_id_token, token)
         return decoded_token
 
-    except firebase_admin.auth.InvalidSessionCookieError as e:
-        logging.warning(f"Invalid or expired Firebase session cookie: {e}")
-        await websocket.close(code=4003, reason="Invalid or expired session")
+    except firebase_admin.auth.InvalidIdTokenError as e:
+        logging.warning(f"Invalid or expired Firebase ID token for WebSocket: {e}")
+        await websocket.close(code=4003, reason="Invalid or expired token")
         return None
     except Exception as e:
         logging.error(f"WebSocket authentication failed: {e}")
         await websocket.close(code=4000, reason="Authentication failed")
         return None
+
