@@ -24,10 +24,17 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
+    sox \
+    imagemagick \
+    ghostscript \
+    dvisvgm \
+    texlive-xetex \
+    texlive-pictures \
     texlive-latex-base \
     texlive-latex-extra \
     texlive-fonts-recommended \
     texlive-science \
+    fonts-noto \
     dvipng \
     libcairo2 \
     libpango1.0-0 \
