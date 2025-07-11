@@ -1,12 +1,14 @@
 import { cookies, headers } from 'next/headers';
 import admin from 'firebase-admin';
 import { applyRateLimit } from '@/lib/rate-limiter';
-
+import {initializeFirebaseAdmin} from '@/firebase/adminConfig'
 interface AuthContext {
   sessionCookie: string;
   ip: string;
   uid: string;
 }
+
+initializeFirebaseAdmin();
 
 export async function authenticatedAction<T>(
   action: (authContext: AuthContext) => Promise<T>,
