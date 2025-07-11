@@ -69,6 +69,7 @@ async def check_and_increment_limit(
 async def submit_job(prompt: Prompt):
     try:
         request_time = datetime.datetime.now(datetime.UTC)
+        request_time_str = request_time.isoformat()
         loop = asyncio.get_event_loop()
         job_id = await loop.run_in_executor(
             None,
@@ -77,7 +78,7 @@ async def submit_job(prompt: Prompt):
             prompt.code,
             "prompt",
             str(prompt.author_id),
-            request_time,
+            request_time_str,
         )
 
         prompt.latest_render_at = request_time
@@ -111,7 +112,7 @@ async def create_new_prompt(
 
 
 @router.post(
-    "/generate/{prompt_id}/",
+    "/generate/{prompt_id}",
     response_model=PromptResponse,
     summary="Generate Code from Prompt Text",
 )

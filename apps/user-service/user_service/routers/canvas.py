@@ -52,7 +52,7 @@ async def check_and_increment_render_limit(session: AsyncSession, user: User) ->
 async def submit_job(canvas: Canvas):
     try:
         request_time = datetime.datetime.now(datetime.UTC)
-
+        request_time_str = request_time.isoformat()
         loop = asyncio.get_event_loop()
         job_id = await loop.run_in_executor(
             None,
@@ -61,7 +61,7 @@ async def submit_job(canvas: Canvas):
             canvas.code,
             "canvas",
             str(canvas.author_id),
-            request_time,
+            request_time_str,
         )
 
         canvas.latest_render_at = request_time
