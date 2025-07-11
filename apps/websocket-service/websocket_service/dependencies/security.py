@@ -1,13 +1,9 @@
-import json
 import logging
 
 import firebase_admin
-from fastapi import HTTPException, Security, status, WebSocket
+from fastapi import WebSocket
 from fastapi.concurrency import run_in_threadpool
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from firebase_admin import auth, credentials
-
-from ..dependencies.config import settings
+from firebase_admin import auth
 
 
 async def initialize_firebase():
@@ -27,7 +23,9 @@ async def get_current_user_ws(websocket: WebSocket):
         auth_data = await websocket.receive_json()
         
         if auth_data.get("type") != "auth" or not auth_data.get("token"):
-            logging.warning("WebSocket connection attempt with invalid auth message format.")
+            logging.warning(
+                "WebSocket connection attempt with invalid auth message format."
+            )
             await websocket.close(code=4001, reason="Invalid auth message")
             return None
 

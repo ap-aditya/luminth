@@ -10,8 +10,8 @@ from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect
 from .dependencies.config import settings
 from .dependencies.message_processing import process_payload
 from .dependencies.security import (
-    initialize_firebase,
     get_current_user_ws,
+    initialize_firebase,
 )
 from .redis_client import RedisClient
 from .websocket_manager import ConnectionManager

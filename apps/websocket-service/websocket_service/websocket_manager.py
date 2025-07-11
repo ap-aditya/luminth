@@ -1,10 +1,11 @@
 import asyncio
-import json
 import logging
 from collections import defaultdict
-from .models import UserMessage
+
 from fastapi import WebSocket
 from starlette.websockets import WebSocketState
+
+from .models import UserMessage
 
 
 class ConnectionManager:

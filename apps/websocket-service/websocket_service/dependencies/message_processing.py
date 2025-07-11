@@ -26,16 +26,24 @@ async def process_payload(
         logging.warning(f"Unknown source_type received: {source_type}")
         return None
 
-    if not item or ((item.latest_render_at is not None) and item.latest_render_at > request_timestamp):
+    if not item or ((item.latest_render_at is not None) and item.latest_render_at > request_timestamp): # noqa: E501
         return None
 
     if status == "success" and video_url:
         if source_type == "canvas":
             update_data = CanvasUpdate(video_url=video_url)
-            await data_crud.update_canvas(session=session, db_canvas=item, canvas_in=update_data)
+            await data_crud.update_canvas(
+                session=session, 
+                db_canvas=item, 
+                canvas_in=update_data
+            )
         elif source_type == "prompt":
             update_data = PromptUpdate(video_url=video_url)
-            await data_crud.update_prompt(session=session, prompt=item, prompt_in=update_data)
+            await data_crud.update_prompt(
+                session=session, 
+                prompt=item,
+                prompt_in=update_data
+            )
         
         await session.commit()
 
@@ -49,7 +57,7 @@ async def process_payload(
     else:
         return UserMessage(
             status="failure",
-            message=f"An error occurred while processing your request for {source_type} with ID {source_id}.",
+            message=f"An error occurred while processing your request for {source_type} with ID {source_id}.", # noqa: E501
             source_id=str(source_id),
             source_type=source_type,
             detail=payload_data.get("error", "Unknown error occurred"),
