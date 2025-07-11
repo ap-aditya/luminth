@@ -46,14 +46,23 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
     if (reconnectTimeoutId.current) {
       clearTimeout(reconnectTimeoutId.current);
     }
+
     const socketUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL;
     ws.current = new WebSocket(socketUrl);
     setReadyState(ws.current.readyState);
 
-    ws.current.onopen = () => {
+    ws.current.onopen = async () => {
       console.log('WebSocket Connected');
       setReadyState(ws.current!.readyState);
       reconnectAttempts.current = 0;
+
+      try {
+        const token = await user.getIdToken(true);
+        ws.current?.send(JSON.stringify({ type: 'auth', token: token }));
+      } catch (error) {
+        console.error('Failed to get auth token for WebSocket', error);
+        ws.current?.close();
+      }
     };
 
     ws.current.onmessage = (event) => {
