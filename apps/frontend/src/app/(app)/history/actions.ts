@@ -5,7 +5,7 @@ import { authenticatedAction } from '@/lib/safe-action';
 
 export async function getHistory(page: number = 1, size: number = 20) {
   return authenticatedAction(async ({ sessionCookie, ip }) => {
-    const url = new URL(`${process.env.FASTAPI_BASE_URL}/api/v1/history`);
+    const url = new URL(`${process.env.FASTAPI_BASE_URL}/api/v1/history/`);
     url.searchParams.append('page', page.toString());
     url.searchParams.append('size', size.toString());
 
