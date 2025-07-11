@@ -10,7 +10,7 @@ export async function generateCodeFromPrompt(
 ) {
   return authenticatedAction(async ({ sessionCookie, ip }) => {
     const response = await fetch(
-      `${process.env.FASTAPI_BASE_URL}/api/v1/prompts/generate/${promptId}/`,
+      `${process.env.FASTAPI_BASE_URL}/api/v1/prompts/generate/${promptId}`,
       {
         method: 'POST',
         headers: {
@@ -36,7 +36,7 @@ export async function generateCodeFromPrompt(
 export async function renderPrompt(promptId: string) {
   return authenticatedAction(async ({ sessionCookie, ip }) => {
     const response = await fetch(
-      `${process.env.FASTAPI_BASE_URL}/api/v1/prompts/render/${promptId}/`,
+      `${process.env.FASTAPI_BASE_URL}/api/v1/prompts/render/${promptId}`,
       {
         method: 'POST',
         headers: {
