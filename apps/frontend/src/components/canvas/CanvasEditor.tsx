@@ -47,6 +47,26 @@ const LimitReachedMessage = () => {
   );
 };
 
+const RenderErrorDisplay = ({
+  error,
+  onClear,
+}: {
+  error: string;
+  onClear: () => void;
+}) => (
+  <div className="text-center text-red-500 bg-red-500/10 p-4 rounded-lg border border-red-500/20">
+    <AlertTriangle className="mx-auto h-10 w-10" />
+    <p className="mt-2 font-semibold">Render Failed</p>
+    <p className="text-sm mt-1">{error}</p>
+    <button
+      onClick={onClear}
+      className="mt-4 px-3 py-1 text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+    >
+      Dismiss
+    </button>
+  </div>
+);
+
 export default function CanvasEditor({ initialData }: CanvasEditorProps) {
   const [title, setTitle] = useState(initialData.title);
   const [code, setCode] = useState(initialData.code || '');
@@ -55,16 +75,14 @@ export default function CanvasEditor({ initialData }: CanvasEditorProps) {
     initialData.latest_render_at,
   );
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
-  const [renderMessage, setRenderMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
+  const [renderError, setRenderError] = useState<string | null>(null);
 
   const [lastSavedState, setLastSavedState] = useState({
     title: initialData.title,
     code: initialData.code || '',
   });
 
+  const [isJobProcessing, setIsJobProcessing] = useState(false);
   const [isSaving, startSaveTransition] = useTransition();
   const [isRendering, startRenderTransition] = useTransition();
 
@@ -84,9 +102,13 @@ export default function CanvasEditor({ initialData }: CanvasEditorProps) {
 
   useEffect(() => {
     if (lastMessage && lastMessage.source_id === initialData.canvas_id) {
+      setIsJobProcessing(false);
       if (lastMessage.status === 'success' && lastMessage.video_url) {
         setVideoUrl(lastMessage.video_url);
         setLatestRenderAt(new Date().toISOString());
+        setRenderError(null);
+      } else if (lastMessage.status === 'failure') {
+        setRenderError(lastMessage.detail || 'The render job failed.');
       }
     }
   }, [lastMessage, initialData.canvas_id]);
@@ -96,9 +118,7 @@ export default function CanvasEditor({ initialData }: CanvasEditorProps) {
       debouncedCode !== lastSavedState.code ||
       debouncedTitle !== lastSavedState.title;
 
-    if (!hasChanges || isSaving) {
-      return;
-    }
+    if (!hasChanges || isSaving) return;
 
     startSaveTransition(async () => {
       setSaveStatus('saving');
@@ -131,20 +151,15 @@ export default function CanvasEditor({ initialData }: CanvasEditorProps) {
   }, [saveStatus]);
 
   const handleRender = () => {
-    setRenderMessage(null);
+    setRenderError(null);
     startRenderTransition(async () => {
       const result = await renderCanvas(initialData.canvas_id);
       if (result.success) {
-        setRenderMessage({
-          type: 'success',
-          text: result.data?.message || 'Render job submitted!',
-        });
         incrementRenderCount();
+        setIsJobProcessing(true);
       } else {
-        setRenderMessage({
-          type: 'error',
-          text: result.error || 'Failed to submit render job.',
-        });
+        setRenderError(result.error || 'Failed to submit render job.');
+        setIsJobProcessing(false);
       }
     });
   };
@@ -209,8 +224,21 @@ export default function CanvasEditor({ initialData }: CanvasEditorProps) {
             options={{ minimap: { enabled: false }, fontSize: 14 }}
           />
         </div>
-        <div className="bg-gray-100 dark:bg-slate-900 rounded-lg flex items-center justify-center border border-gray-200 dark:border-slate-800 p-2 min-h-[500px]">
-          {videoUrl && !videoHasExpired ? (
+        <div className="bg-gray-100 dark:bg-slate-900 rounded-lg flex items-center justify-center border border-gray-200 dark:border-slate-800 p-4 min-h-[500px]">
+          {renderError ? (
+            <RenderErrorDisplay
+              error={renderError}
+              onClear={() => setRenderError(null)}
+            />
+          ) : isJobProcessing ? (
+            <div className="text-center text-gray-500">
+              <Loader2 className="mx-auto h-10 w-10 text-cyan-500 animate-spin" />
+              <p className="mt-2 font-semibold">Rendering video...</p>
+              <p className="text-sm mt-1">
+                You will be notified when it's ready.
+              </p>
+            </div>
+          ) : videoUrl && !videoHasExpired ? (
             <video
               key={videoUrl}
               controls
@@ -233,13 +261,6 @@ export default function CanvasEditor({ initialData }: CanvasEditorProps) {
                 </>
               ) : (
                 <p>No video rendered yet.</p>
-              )}
-              {renderMessage && (
-                <p
-                  className={`text-sm mt-2 ${renderMessage.type === 'error' ? 'text-red-500' : 'text-green-500'}`}
-                >
-                  {renderMessage.text}
-                </p>
               )}
             </div>
           )}

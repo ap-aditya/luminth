@@ -39,11 +39,13 @@ const LimitReachedMessage = ({
 }) => {
   const resetTime = new Date();
   resetTime.setUTCHours(24, 0, 0, 0);
+
   const formattedTime = resetTime.toLocaleString(undefined, {
     hour: 'numeric',
     minute: 'numeric',
     timeZoneName: 'short',
   });
+
   const messageParts = [];
   if (isGenerateDisabled) messageParts.push('Generate');
   if (isRenderDisabled) messageParts.push('Render');
@@ -59,6 +61,26 @@ const LimitReachedMessage = ({
   );
 };
 
+const RenderErrorDisplay = ({
+  error,
+  onClear,
+}: {
+  error: string;
+  onClear: () => void;
+}) => (
+  <div className="text-center text-red-500 bg-red-500/10 p-4 rounded-lg border border-red-500/20">
+    <AlertTriangle className="mx-auto h-10 w-10" />
+    <p className="mt-2 font-semibold">Render Failed</p>
+    <p className="text-sm mt-1">{error}</p>
+    <button
+      onClick={onClear}
+      className="mt-4 px-3 py-1 text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+    >
+      Dismiss
+    </button>
+  </div>
+);
+
 export default function PromptEditor({ initialData }: PromptEditorProps) {
   const [promptText, setPromptText] = useState(initialData.prompt_text || '');
   const [code, setCode] = useState(initialData.code || '');
@@ -70,6 +92,7 @@ export default function PromptEditor({ initialData }: PromptEditorProps) {
   const [isRendering, startRenderTransition] = useTransition();
   const [isCreatingCanvas, startCreateCanvasTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isJobProcessing, setIsJobProcessing] = useState(false);
 
   const { lastMessage } = useWebSocket();
   const {
@@ -96,9 +119,13 @@ export default function PromptEditor({ initialData }: PromptEditorProps) {
 
   useEffect(() => {
     if (lastMessage && lastMessage.source_id === initialData.prompt_id) {
+      setIsJobProcessing(false);
       if (lastMessage.status === 'success' && lastMessage.video_url) {
         setVideoUrl(lastMessage.video_url);
         setLatestRenderAt(new Date().toISOString());
+        setErrorMessage(null);
+      } else if (lastMessage.status === 'failure') {
+        setErrorMessage(lastMessage.detail || 'The render job failed.');
       }
     }
   }, [lastMessage, initialData.prompt_id]);
@@ -131,8 +158,10 @@ export default function PromptEditor({ initialData }: PromptEditorProps) {
       const result = await renderPrompt(initialData.prompt_id);
       if (result.success) {
         incrementRenderCount();
+        setIsJobProcessing(true);
       } else {
         setErrorMessage(result.error || 'Failed to submit render job.');
+        setIsJobProcessing(false);
       }
     });
   };
@@ -160,7 +189,7 @@ export default function PromptEditor({ initialData }: PromptEditorProps) {
             isRenderDisabled={isRenderDisabled}
           />
         )}
-        {errorMessage && (
+        {errorMessage && !limitReached && (
           <p className="text-sm text-red-500 mt-2 text-center">
             {errorMessage}
           </p>
@@ -220,8 +249,16 @@ export default function PromptEditor({ initialData }: PromptEditorProps) {
             }}
           />
         </div>
-        <div className="bg-gray-100 dark:bg-slate-900 rounded-lg flex items-center justify-center border border-gray-200 dark:border-slate-800 p-2 min-h-[500px]">
-          {videoUrl && !videoHasExpired ? (
+        <div className="bg-gray-100 dark:bg-slate-900 rounded-lg flex items-center justify-center border border-gray-200 dark:border-slate-800 p-4 min-h-[500px]">
+          {isJobProcessing ? (
+            <div className="text-center text-gray-500">
+              <Loader2 className="mx-auto h-10 w-10 text-cyan-500 animate-spin" />
+              <p className="mt-2 font-semibold">Rendering video...</p>
+              <p className="text-sm mt-1">
+                You will be notified when it's ready.
+              </p>
+            </div>
+          ) : videoUrl && !videoHasExpired ? (
             <video
               key={videoUrl}
               controls
