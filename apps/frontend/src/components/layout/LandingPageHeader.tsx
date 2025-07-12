@@ -1,16 +1,10 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const Header = () => {
-  const navLinks = (
-    <>
-      <Link
-        href="/auth/signin"
-        className="mt-2 block w-full rounded-xl bg-cyan-500 px-4 py-2 text-center font-semibold text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-colors duration-300 hover:bg-cyan-600 sm:mt-0 sm:w-auto"
-      >
-        Sign In
-      </Link>
-    </>
-  );
+  const pathname = usePathname();
 
   return (
     <header className="fixed left-0 right-0 top-0 z-50 border-b border-gray-200/50 bg-white/80 backdrop-blur-sm dark:border-slate-800/50 dark:bg-slate-950/30">
@@ -51,7 +45,17 @@ const Header = () => {
               Luminth
             </span>
           </Link>
-          <nav className="items-center space-x-2 md:flex">{navLinks}</nav>
+
+          <div className="flex items-center gap-4">
+            {pathname === '/' && (
+              <Link
+                href="/auth/signin"
+                className="hidden md:block rounded-xl bg-cyan-500 px-4 py-2 text-center font-semibold text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-colors duration-300 hover:bg-cyan-600"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </header>
