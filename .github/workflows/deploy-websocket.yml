@@ -5,7 +5,7 @@ on:
       - main
     paths:
       - 'apps/websocket-service/**'
-      - 'libs/**'
+      - 'libs/db-core/**'
       - '.github/workflows/deploy-websocket.yml'
 env:
   GCP_REGION: us-central1
@@ -55,7 +55,7 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.GCP_REGION }}
           image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}@${{ steps.build.outputs.digest }}
-          flags: '--session-affinity --cpu=1 --memory=256Mi'
+          flags: '--service-account user-service-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com --session-affinity --cpu=1 --memory=256Mi'
           env_vars: |
             VALKEY_URI=${{ secrets.VALKEY_URI }}
             DB_URL=${{ secrets.DB_URL }}

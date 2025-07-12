@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'apps/rendering-service/**'
+      - '.github/workflows/deploy-renderer.yml'
 
 env:
   GCP_REGION: us-central1
@@ -57,7 +58,7 @@ jobs:
           image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}@${{ steps.build.outputs.digest }}
 
           timeout: 590s
-          flags: '--concurrency=1 --execution-environment=gen2 --cpu=1 --memory=1Gi'
+          flags: '--service-account rendering-service@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com --concurrency=1 --execution-environment=gen2 --cpu=1 --memory=1Gi'
 
           env_vars: |
             DROPBOX_APP_KEY=${{ secrets.DROPBOX_APP_KEY }}
