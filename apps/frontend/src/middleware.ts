@@ -22,6 +22,7 @@ const ratelimit = redis
 
 const publicPaths = [
   '/',
+  '/LissajousCurves.mp4',
   '/auth/signin',
   '/auth/signup',
   '/auth/forgot-password',

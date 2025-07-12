@@ -1,28 +1,35 @@
+'use client';
 import React, { FC } from 'react';
-import CodeBlock from '../CodeBlock';
-import AnimatedGraphic from '../graphics/AnimatedGraphic';
+import Editor from '@monaco-editor/react';
 const EditorPreviewSection: FC = () => {
   const mockCode = `from manim import *
 
-class ThreeDParametricCurve(ThreeDScene):
+class LissajousCurves(Scene):
     def construct(self):
-        # Set up camera perspective
-        self.set_camera_orientation(
-            phi=75 * DEGREES, 
-            theta=30 * DEGREES
+        axes = Axes(
+            x_range=[-1.5, 1.5, 1],
+            y_range=[-1.5, 1.5, 1],
+            x_length=5,
+            y_length=5,
+            axis_config={"include_tip": True, "stroke_width": 2},
         )
-        # Define the parametric curve
-        curve = ParametricFunction(
-            lambda u: np.array([
-                1.2 * np.cos(u),
-                1.2 * np.sin(u),
-                u / 4
-            ]),
-            t_range=np.array([-PI, PI, 0.1]),
-            color=BLUE
-        )
-        self.play(Create(curve), run_time=3)
-        self.wait()
+        
+        a_values = [1, 2, 3]
+        b_values = [1, 2, 3]
+        delta_values = [0, PI/2, PI]
+
+        curves = []
+        for a in a_values:
+            for b in b_values:
+                for delta in delta_values:
+                    func = lambda t: np.array([np.sin(a*t + delta), np.cos(b*t), 0])
+                    curve = ParametricFunction(func, t_range=[0, 2*PI], color=YELLOW)
+                    curves.append(curve)
+
+        for curve in curves:
+            self.play(Create(axes), Create(curve))
+            self.wait(1)
+            self.play(FadeOut(curve))
 `;
   return (
     <section className="py-16 sm:py-20 bg-gray-50 dark:bg-gray-700">
@@ -37,11 +44,25 @@ class ThreeDParametricCurve(ThreeDScene):
             <div className="w-3 h-3 rounded-full bg-green-500"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2">
-            <div className="bg-gray-50 dark:bg-slate-900 h-full">
-              <CodeBlock code={mockCode} />
-            </div>
-            <div className="bg-grid-pattern-light dark:bg-grid-pattern-dark p-4 flex items-center justify-center min-h-[300px] border-t md:border-t-0 md:border-l border-gray-200 dark:border-slate-800">
-              <AnimatedGraphic className="w-48 h-48" />
+            <Editor
+              height="100%"
+              defaultLanguage="python"
+              theme="vs-dark"
+              value={mockCode}
+              options={{
+                readOnly: true,
+                minimap: { enabled: false },
+                fontSize: 15,
+              }}
+            />
+            <div className="p-4 flex items-center justify-center min-h-[300px] border-t md:border-t-0 md:border-l border-gray-200 dark:border-slate-800">
+                <video
+                  controls
+                  autoPlay
+                  className="w-full h-full object-contain"
+                >
+                   <source src="/LissajousCurves.mp4" type="video/mp4" />
+                </video>
             </div>
           </div>
         </div>
