@@ -26,6 +26,7 @@ const publicPaths = [
   '/auth/signin',
   '/auth/signup',
   '/auth/forgot-password',
+  '/auth/action'
 ];
 
 export async function middleware(request: NextRequest) {
