@@ -31,17 +31,17 @@ graph TD
         U[Upstash Rate Limiting]
     end
 
-    subgraph Frontend Layer
+    subgraph "Frontend Layer"
         B(Next.js Server / BFF)
     end
 
-    subgraph Backend Services (Google Cloud Run)
+    subgraph "Backend Services (Google Cloud Run)"
         C(User Service - FastAPI)
         D(Rendering Service - FastAPI)
         E(WebSocket Service - FastAPI)
     end
 
-    subgraph External Services
+    subgraph "External Services"
         F[Firebase Auth]
         G[PostgreSQL DB]
         H[Aiven for Valkey - Redis]
@@ -76,6 +76,7 @@ graph TD
     style C fill:#9c9,stroke:#333,stroke-width:2px
     style D fill:#9c9,stroke:#333,stroke-width:2px
     style E fill:#9c9,stroke:#333,stroke-width:2px
+
 ```
 
 ### Workflow Breakdown
