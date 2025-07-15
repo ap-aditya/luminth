@@ -55,21 +55,24 @@ graph TD
 
     A -- Server Action --> U -- "Verified Request" --> B
     B -- "Verifies Session" --> F
-    B -- "Generates Code" --> K
     B -- "API Call (w/ Secret)" --> C
+    
+    C -- "Verifies Session" --> F
+    C -- "Generates Code" --> K
+    C -- "Submit Render Job" --> I
     C -- "CRUD Ops" --> G
     C -- "Rate Limit Check" --> N
 
-    B -- "Submit Render Job" --> I
     I -- "Triggers" --> D
     D -- "Analyzes & Renders Code" --> J(Saves Video)
     D -- "Publishes URL" --> H
 
-    I -- "On Failure" --> L
+    I -- "On  Persistent Failures" --> L
     L -- "Triggers" --> M
     M -- "Publishes Failure" --> H
 
     E -- "Listens to Channel" --> H
+    E -- "DB Operations" --> G
     E -- "Pushes Notification" --> A
 
     %% Improved styling with better contrast
