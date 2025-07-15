@@ -44,7 +44,8 @@ graph TD
     subgraph "External Services"
         F[Firebase Auth]
         G[PostgreSQL DB]
-        H[Aiven for Valkey - Redis]
+        H[Aiven Valkey - Notifications]
+        N[Aiven Valkey - Rate Limiting]
         I[Google Pub/Sub]
         J[Dropbox API]
         K[Gemini API]
@@ -57,7 +58,7 @@ graph TD
     B -- "Generates Code" --> K
     B -- "API Call (w/ Secret)" --> C
     C -- "CRUD Ops" --> G
-    C -- "Rate Limit Check" --> H
+    C -- "Rate Limit Check" --> N
 
     B -- "Submit Render Job" --> I
     I -- "Triggers" --> D
@@ -71,11 +72,23 @@ graph TD
     E -- "Listens to Channel" --> H
     E -- "Pushes Notification" --> A
 
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#9cf,stroke:#333,stroke-width:2px
-    style C fill:#9c9,stroke:#333,stroke-width:2px
-    style D fill:#9c9,stroke:#333,stroke-width:2px
-    style E fill:#9c9,stroke:#333,stroke-width:2px
+    %% Improved styling with better contrast
+    style A fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    style B fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    style C fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    style D fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    style E fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    style U fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style F fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+    style G fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+    style H fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#01579b
+    style N fill:#fff8e1,stroke:#f57f17,stroke-width:2px,color:#e65100
+    style I fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+    style J fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+    style K fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+    style L fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+    style M fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+
 
 ```
 
