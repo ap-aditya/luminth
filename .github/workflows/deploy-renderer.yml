@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'apps/rendering-service/**'
-      - '.github/workflows/deploy-renderer.yml'
+      - 'apps/rendering-service/rendering_service/**'
+
 
 env:
   GCP_REGION: us-central1

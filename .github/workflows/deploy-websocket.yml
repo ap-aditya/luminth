@@ -4,9 +4,8 @@ on:
     branches:
       - main
     paths:
-      - 'apps/websocket-service/**'
-      - 'libs/db-core/**'
-      - '.github/workflows/deploy-websocket.yml'
+      - 'apps/websocket-service/websocket_service/**'
+      - 'libs/db-core/db_core/**'
 env:
   GCP_REGION: us-central1
   ARTIFACT_REPO: luminth-services

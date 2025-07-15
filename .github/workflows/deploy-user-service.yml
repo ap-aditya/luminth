@@ -5,9 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'apps/user-service/**'
-      - 'libs/db-core/**'
-      - '.github/workflows/deploy-user-service.yml'
+      - 'apps/user-service/user_service/**'
+      - 'libs/db-core/db_core/**'
 
 env:
   GCP_REGION: us-central1 
