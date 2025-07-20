@@ -17,5 +17,8 @@ if not settings.REDIS_RL_URL:
     limiter = Limiter(key_func=get_request_identifier)
 else:
     limiter = Limiter(
-        key_func=get_request_identifier, storage_uri=settings.REDIS_RL_URL
+        key_func=get_request_identifier, 
+        storage_uri=settings.REDIS_RL_URL,
+        in_memory_fallback_enabled=True,
+        swallow_errors=True
     )
