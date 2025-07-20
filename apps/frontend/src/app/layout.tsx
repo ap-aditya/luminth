@@ -1,6 +1,8 @@
 import './global.css';
 import { AuthProvider } from '../hooks/useFirebaseAuth';
 import { Poppins } from 'next/font/google';
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 const poppins = Poppins({
   variable: '--font-poppins',
   subsets: ['latin'],
@@ -19,6 +21,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.variable} font-sans`}>
+        <SpeedInsights />
+        <Analytics />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
