@@ -1,4 +1,4 @@
-FROM python:3.11-slim AS builder
+FROM python:3.11-slim-bookworm AS builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     pkg-config \
@@ -17,7 +17,7 @@ RUN uv venv /app/.venv && \
 COPY rendering_service/ ./rendering_service/
 
 
-FROM python:3.11-slim
+FROM python:3.11-slim-bookworm
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PATH="/app/.venv/bin:$PATH"
