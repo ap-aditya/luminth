@@ -20,4 +20,4 @@ RUN uv sync --no-cache
 WORKDIR /app
 
 ENV PATH="/app/apps/user-service/.venv/bin:$PATH"
-CMD ["gunicorn", "--chdir", "/app/apps/user-service", "-w", "1", "--threads", "4", "--timeout", "0", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8080", "user_service.main:app"]
+CMD ["gunicorn", "--chdir", "/app/apps/user-service", "-w", "2","--timeout", "160", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8080", "user_service.main:app"]

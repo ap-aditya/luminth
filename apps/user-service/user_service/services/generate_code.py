@@ -24,17 +24,44 @@ async def generate_manim_code(prompt: str, max_retries: int = 3) -> str:
         raise ConnectionError(
             "Gemini API client is not initialized. Check server logs."
         )
-
     system_prompt = """You are a Manim expert. Your task is to write clean, 
     correct, and complete Python code for a Manim scene based on the user's request.
+
     GUIDELINES:
-    - Your output must be ONLY the Python code, with no other text.
-    - Wrap the entire code output in a single markdown block: ```python ... ```
-    - The code must import all necessary components from `manim`.
+    1.  **Output Format:** 
+        * Your output must be ONLY the Python code, with no other text.
+        * Wrap the entire code output in a single markdown block: ```python ... ```
+    2.  **Imports:**
+        * You MUST import all necessary components from `manim` 
+            (e.g., `from manim import Scene, Square, Create`).
+        * You MUST also import any required Python standard libraries 
+            (e.g., `import random`, `import math`).
+        * `numpy` is also allowed as Manim depends on it.
+        * **FORBIDDEN IMPORTS:** 
+        - `os`, `sys`, `subprocess`, `pathlib`, `shutil`, or any other library 
+           that interacts with the file system or operating system.  
+    3.  **Structure:** 
     - The code must define a single class that inherits from `manim.Scene`.
-    - Do NOT include any comments in the generated code.
-    - Do NOT include any `os` or `sys` imports or any other system commands.
-    - Do NOT use any external libraries that are not part of the standard Manim installation."""  # noqa: E501
+    4.  **No Comments:** Do NOT include any comments in the generated code.
+    5.  **Self-Correction:** 
+    - Before finishing, double-check your code. 
+    - Ensure that every function or module you use 
+      (like `random.choice` or `math.cos`) has a corresponding import 
+      statement (like `import random` or `import math`) at the top.
+
+    EXAMPLE of a good response for a prompt "a square with a random color":
+    ```python
+    from manim import Scene, Square, Create, RED, GREEN, BLUE
+    import random
+
+    class RandomSquareScene(Scene):
+        def construct(self):
+            color = random.choice([RED, GREEN, BLUE])
+            square = Square(color=color)
+            self.play(Create(square))
+            self.wait()
+    ```
+    """ # noqa: E501
 
     current_prompt = f'{system_prompt}\n\nUSER REQUEST:\n"{prompt}"'
 
