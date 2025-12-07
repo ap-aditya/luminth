@@ -7,6 +7,7 @@ on:
     paths:
       - 'apps/user-service/user_service/**'
       - 'libs/db-core/db_core/**'
+  workflow_dispatch:
 
 env:
   GCP_REGION: us-central1 
