@@ -6,9 +6,6 @@ import type { WithNxOptions } from '@nx/next/plugins/with-nx';
  **/
 const nextConfig: WithNxOptions = {
   nx: {
-    // Set this to true if you would like to use SVGR
-    // See: https://github.com/gregberge/svgr
-    svgr: false,
   },
   images: {
     remotePatterns: [
